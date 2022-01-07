@@ -1,1 +1,0 @@
-# aokikoko.github.io
