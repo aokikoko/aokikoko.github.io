@@ -18,7 +18,6 @@ jobs:
       - name: Build website
         working-directory: website
         run: |
-          cd website
           npm ci
           npm run build
 
