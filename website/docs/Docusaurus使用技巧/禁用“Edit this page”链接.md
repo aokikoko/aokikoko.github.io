@@ -1,5 +1,5 @@
 ---
-title: '隐藏“Edit this page”链接'
+title: '[Doc] 隐藏“Edit this page”链接'
 ---
 
 <br />

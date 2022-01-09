@@ -1,16 +1,16 @@
 // @ts-check
 // Note: type annotations allow type checking and IDEs autocompletion
 
-const lightCodeTheme = require('prism-react-renderer/themes/github');
+// const lightCodeTheme = require('prism-react-renderer/themes/github');
 const darkCodeTheme = require('prism-react-renderer/themes/dracula');
 
 /** @type {import('@docusaurus/types').Config} */
 const config = {
-  title: 'My Site啊success',
+  title: 'Aoki 的自留地',
   tagline: 'Dinosaurs are cool',
   url: 'https://phero.live',
   baseUrl: '/',
-  onBrokenLinks: 'throw',
+  onBrokenLinks: 'throw', //  编译遇到死链怎么处理
   onBrokenMarkdownLinks: 'warn',
   favicon: 'img/favicon.ico',
   organizationName: 'aokikoko', // Usually your GitHub org/user name.
@@ -24,7 +24,7 @@ const config = {
         docs: {
           sidebarPath: require.resolve('./sidebars.js'),
           // Please change this to your repo.
-          editUrl: 'https://github.com/facebook/docusaurus/tree/main/packages/create-docusaurus/templates/shared/',
+          editUrl: 'https://github.com/aokikoko/aokikoko.github.io/blob/main/website',
         },
         blog: {
           showReadingTime: true,
@@ -48,6 +48,7 @@ const config = {
           alt: 'My Site Logo',
           src: 'img/logo.svg',
         },
+        // hideOnScroll: true,  // 文档页面向下滚动时收起顶部导航
         items: [
           {
             type: 'doc',
@@ -55,6 +56,13 @@ const config = {
             position: 'left',
             label: '笔记',
           },
+          // 待完成关于我页面
+          // {
+          //   to: '/me',   点击后跳转的链接，站内跳转用 to ,站外用 href
+          //   activeBasePath: 'docs',  根据它显示当前高亮
+          //   label: '关于我',
+          //   position: 'left'
+          // },
           // 先隐藏blog
           // {to: '/blog', label: 'Blog', position: 'left'},
           {
@@ -64,6 +72,7 @@ const config = {
           },
         ],
       },
+      hideableSidebar: true,  // 左侧边栏是否可收缩
       footer: {
         style: 'dark',
         links: [
@@ -71,7 +80,7 @@ const config = {
             title: 'Docs',
             items: [
               {
-                label: 'Tutorial',
+                label: '笔记 Tutorial',
                 to: '/docs/intro',
               },
             ],
@@ -79,14 +88,10 @@ const config = {
           {
             title: 'Community',
             items: [
-              {
-                label: 'Stack Overflow',
-                href: 'https://stackoverflow.com/questions/tagged/docusaurus',
-              },
-              {
-                label: 'Discord',
-                href: 'https://discordapp.com/invite/docusaurus',
-              },
+              // {
+              //   label: 'Stack Overflow',
+              //   href: 'https://stackoverflow.com/questions/tagged/docusaurus',
+              // },
               {
                 label: 'Twitter',
                 href: 'https://twitter.com/docusaurus',
@@ -102,7 +107,7 @@ const config = {
               },
               {
                 label: 'GitHub',
-                href: 'https://github.com/facebook/docusaurus',
+                href: 'https://github.com/aokikoko',
               },
             ],
           },
@@ -113,6 +118,26 @@ const config = {
         theme: require('prism-react-renderer/themes/dracula'),
         // theme: lightCodeTheme,
         darkTheme: darkCodeTheme,
+      },
+      algolia: {
+        // If Algolia did not provide you any appId, use 'BH4D9OD16A'
+        appId: 'BMRZNSN9O0',
+  
+        // Public API key: it is safe to commit it
+        apiKey: '70e8d7a1d265f5af8aab3f33f833655c',
+  
+        indexName: 'dev_docusaurus',
+  
+        // Optional: see doc section below
+        contextualSearch: true,
+  
+        // Optional: Specify domains where the navigation should occur through window.location instead on history.push. Useful when our Algolia config crawls multiple documentation sites and we want to navigate with window.location.href to them.
+        // externalUrlRegex: 'external\\.com|domain\\.com',
+  
+        // Optional: Algolia search parameters
+        searchParameters: {},
+  
+        //... other Algolia params
       },
     }),
 };
