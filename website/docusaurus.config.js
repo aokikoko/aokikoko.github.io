@@ -10,7 +10,7 @@ const config = {
   tagline: 'Dinosaurs are cool',
   url: 'https://phero.live',
   baseUrl: '/',
-  onBrokenLinks: 'throw',
+  onBrokenLinks: 'throw', //  编译遇到死链怎么处理
   onBrokenMarkdownLinks: 'warn',
   favicon: 'img/favicon.ico',
   organizationName: 'aokikoko', // Usually your GitHub org/user name.
@@ -48,6 +48,7 @@ const config = {
           alt: 'My Site Logo',
           src: 'img/logo.svg',
         },
+        // hideOnScroll: true,  // 文档页面向下滚动时收起顶部导航
         items: [
           {
             type: 'doc',
@@ -57,7 +58,8 @@ const config = {
           },
           // 待完成关于我页面
           // {
-          //   to: '/me',
+          //   to: '/me',   点击后跳转的链接，站内跳转用 to ,站外用 href
+          //   activeBasePath: 'docs',  根据它显示当前高亮
           //   label: '关于我',
           //   position: 'left'
           // },
@@ -70,6 +72,7 @@ const config = {
           },
         ],
       },
+      hideableSidebar: true,  // 左侧边栏是否可收缩
       footer: {
         style: 'dark',
         links: [
@@ -115,6 +118,26 @@ const config = {
         theme: require('prism-react-renderer/themes/dracula'),
         // theme: lightCodeTheme,
         darkTheme: darkCodeTheme,
+      },
+      algolia: {
+        // If Algolia did not provide you any appId, use 'BH4D9OD16A'
+        appId: 'BMRZNSN9O0',
+  
+        // Public API key: it is safe to commit it
+        apiKey: '70e8d7a1d265f5af8aab3f33f833655c',
+  
+        indexName: 'dev_docusaurus',
+  
+        // Optional: see doc section below
+        contextualSearch: true,
+  
+        // Optional: Specify domains where the navigation should occur through window.location instead on history.push. Useful when our Algolia config crawls multiple documentation sites and we want to navigate with window.location.href to them.
+        // externalUrlRegex: 'external\\.com|domain\\.com',
+  
+        // Optional: Algolia search parameters
+        searchParameters: {},
+  
+        //... other Algolia params
       },
     }),
 };
