@@ -25,7 +25,7 @@ pagination_prev: null
 
 ## Everything is Figureoutable.
 
-<font color="#25c2a0" face="楷体" size="40">凡事皆有出路</font>
+<font color="#25c2a0" face="楷体" size="40">「凡事皆有出路」</font>
 
 <br />
 <br />
