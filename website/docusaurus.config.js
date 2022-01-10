@@ -7,7 +7,7 @@ const darkCodeTheme = require('prism-react-renderer/themes/dracula');
 /** @type {import('@docusaurus/types').Config} */
 const config = {
   title: 'Aoki 的自留地',
-  tagline: 'Dinosaurs are cool',
+  tagline: 'frontend blog',
   url: 'https://phero.live',
   baseUrl: '/',
   onBrokenLinks: 'throw', //  编译遇到死链怎么处理
@@ -49,6 +49,7 @@ const config = {
           src: 'img/logo.svg',
         },
         // hideOnScroll: true,  // 文档页面向下滚动时收起顶部导航
+        style: 'dark',  // dark 和 primary (基于 --ifm-color-main 颜色)。
         items: [
           {
             type: 'doc',
@@ -139,6 +140,15 @@ const config = {
   
         //... other Algolia params
       },
+      // 顶部公告栏
+      // announcementBar: {
+      //   id: 'support_us',
+      //   content:
+      //     'We are looking to revamp our docs, please fill <a target="_blank" rel="noopener noreferrer" href="#">this survey</a>',
+      //   backgroundColor: '#fafbfc',
+      //   textColor: '#091E42',
+      //   isCloseable: true,
+      // },
     }),
 };
 
