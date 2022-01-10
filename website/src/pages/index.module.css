@@ -24,67 +24,7 @@
 
 /* 自定义开始 */
 
-.slider_container {
-  width: 100%;
-  height: 100%;
-  min-width: 100%;
-  display: flex;
-  white-space: nowrap;
-  overflow: hidden;
-}
-
-.slider_pic {
-  width: 50vw;
-  min-width: 50vw;
-  height: 100%;
-}
-
-.slider_img {
-  position: absolute;
-  width: 0;
-  height: 0;
-  min-width: 50vw;
-  max-width: 100%;
-  min-height: 100%;
-  max-height: 100%;
-  object-fit: cover;
-  object-position: 11.99% 36.16%;
-}
-
-.slider_mp4 {
-  width: 50%;
-  min-width: 50%;
-  height: 100%;
-}
-
-.slider_content {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  display: -moz-box;
-  display: flex;
-  -moz-box-orient: vertical;
-  -moz-box-direction: normal;
-  flex-direction: column;
-  -moz-box-pack: end;
-  justify-content: flex-end;
-  -moz-box-align: start;
-  align-items: flex-start;
-  margin: 0 4vw 16vw;
-  color: #fff;
-}
-
-.slider_content h2 {
-  font-size: 6vw;
-  font-weight: 400;
-}
-
-.slider_content_o {
-  display: block;
-  max-width: 32vw;
-}
-
-.test_a {
+.note {
   position: absolute;
   bottom: 0;
   left: 0;
@@ -94,13 +34,13 @@
   margin: 5.3333333333vw 2.6666666667vw;
 }
 
-.test_b {
+.note_b {
   height: 116%;
   top: -8%;
   transform: translateY(1%);
 }
 
-.test_c {
+.note_main {
   display: inline-flex;
   flex-wrap: wrap;
   max-width: 29vw;
@@ -111,7 +51,7 @@
   line-height: 1em;
 }
 
-.test_Aspects {
+.note_aspects {
   display: block;
   overflow: hidden;
   height: 1.15em;
@@ -120,7 +60,7 @@
   padding: 0.01em 0.05em 0.01em 0.01em;
 }
 
-.test_p {
+.note_p {
   max-width: 32vw;
   font-family: HelveticaNowText, Helvetica, Arial, sans-serif;
   font-size: 1vw;
@@ -133,9 +73,26 @@
 }
 
 .section_a {
-	height: 93.8vh;
+  height: 93.8vh;
   display: flex;
   justify-content: space-between;
+}
+
+.section_a::after {
+  content: "";
+  position: absolute;
+  width: 100%;
+  height: 93.8vh;
+  pointer-events: none;
+  background: -webkit-gradient(
+      linear,
+      left bottom,
+      left top,
+      from(rgba(0, 0, 0, 0.13)),
+      to(rgba(0, 0, 0, 0.13))
+    ),
+    -webkit-gradient(linear, left top, left bottom, color-stop(0.78%, rgba(0, 0, 0, 0.25)), color-stop(8.49%, transparent)),
+    -webkit-gradient(linear, left bottom, left top, from(rgba(0, 0, 0, 0.38)), color-stop(50.07%, transparent));
 }
 
 .section_b {
@@ -143,9 +100,10 @@
 }
 
 .section_img {
-  height: 100vh;
+  height: 93.8vh;
   object-fit: cover;
   object-position: 18% 36.16%;
+  overflow: hidden;
 }
 
 .section_mp4 {

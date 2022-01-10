@@ -46,18 +46,19 @@ export default function Home() {
           </video>
         </div>
       </div>
-      <div className={styles.test_a}>
-        <div className={styles.test_b}>
-          <h2 className={styles.test_c} aria-label="Test">
-            <div className={styles.test_Aspects}>Aspects:&nbsp;</div>
+      <div className={styles.note}>
+        <div className={styles.note_b}>
+          <h2 className={styles.note_main} aria-label="Test">
+            <div className={styles.note_aspects}>Aspects:&nbsp;</div>
             <div>Ep.&nbsp;</div>
             <div>01</div>
           </h2>
           <div>
-            <p className={styles.test_p}>
-              Excitement drives us to explore. But what about when it overwhelms
-              us? Experienced Swiss freeriders share what happened when what
-              should have been the perfect day ended in an avalanche rescue.
+            <p className={styles.note_p}>
+              It's not that big of a deal. Nothing in life is that complicated.
+              You can do anything you set your mind to, if you roll up your sleeves,
+              you get in there and you do it. Everything is figure-outable.
+              「凡事皆有出路」
             </p>
           </div>
         </div>
