@@ -50,8 +50,8 @@ export default function Home() {
         <div className={styles.note_b}>
           <h2 className={styles.note_main} aria-label="Test">
             <div className={styles.note_aspects}>Aspects:&nbsp;</div>
-            <div>Ep.&nbsp;</div>
-            <div>01</div>
+            <div className={styles.note_n}>Ep.&nbsp;</div>
+            <div className={styles.note_n}>01</div>
           </h2>
           <div>
             <p className={styles.note_p}>
