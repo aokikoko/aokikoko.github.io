@@ -40,6 +40,11 @@
   transform: translateY(1%);
 }
 
+@font-face {
+  font-family: 'WhyteInktrapBook';
+  src: url('../../static/index-page/WhyteInktrap-Book.woff2');
+}
+
 .note_main {
   display: inline-flex;
   flex-wrap: wrap;
