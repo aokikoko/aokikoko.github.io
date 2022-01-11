@@ -63,6 +63,41 @@
   margin-right: 0.19em;
   margin-bottom: -0.15em;
   padding: 0.01em 0.05em 0.01em 0.01em;
+  animation-name: fadeInAnimation;
+  animation-timing-function: ease-in-out;
+  animation-duration: 1.28s;
+  animation-delay: 0.075s;
+}
+
+@keyframes fadeInAnimation {
+  0% {
+    opacity: 0;
+    transform: translateY(0.5em);
+  }
+
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.note_n {
+  animation-name: fadeInNoteN;
+  animation-timing-function: cubic-bezier(0.165, 0.84, 0.44, 1);
+  animation-duration: 1.86s;
+  animation-delay: 0.075s;
+}
+
+@keyframes fadeInNoteN {
+  0% {
+    opacity: 0;
+    transform: translateY(0.8em);
+  }
+
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .note_p {
@@ -75,6 +110,17 @@
   margin-top: 0.8vw;
   font-weight: 400;
   margin-left: 0.4vw;
+  animation: fadeInNoteP ease 5.8s;
+}
+
+@keyframes fadeInNoteP {
+  0% {
+    opacity: 0;
+  }
+
+  100% {
+    opacity: 1;
+  }
 }
 
 .section_a {
