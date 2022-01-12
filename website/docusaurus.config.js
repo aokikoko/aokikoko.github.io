@@ -11,7 +11,7 @@ const config = {
   url: 'https://phero.live',
   baseUrl: '/',
   onBrokenLinks: 'throw', //  编译遇到死链怎么处理
-  onBrokenMarkdownLinks: 'warn',
+  onBrokenMarkdownLinks: 'warn',  // Docusaurus 在检测到重复路径时的行为。默认情况下，Docusaurus 将在运行 yarn start 或 yarn build 后输出警告。
   favicon: 'img/favicon.ico',
   organizationName: 'aokikoko', // Usually your GitHub org/user name.
   projectName: 'aokikoko.github.io', // Usually your repo name.
