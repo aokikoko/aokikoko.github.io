@@ -242,7 +242,7 @@ if (pet instanceof Fish) {
 
 ## 可以为 null 的类型
 
-TypeScript 具有两种特殊的类型，`null` 和 `undefined`，它们分别具有值 `null` 和 `undefined`。我们在[基础类型](/chapter2/type)一节里已经做过简要说明。 默认情况下，类型检查器认为 `null` 与 `undefined` 可以赋值给任何类型。 `null` 与 `undefined` 是所有其它类型的一个有效值。 这也意味着，你阻止不了将它们赋值给其它类型，就算是你想要阻止这种情况也不行。`null`的发明者，Tony Hoare，称它为[价值亿万美金的错误](https://en.wikipedia.org/wiki/Null_pointer#History)。
+TypeScript 具有两种特殊的类型，`null` 和 `undefined`，它们分别具有值 `null` 和 `undefined`。我们在基础类型一节里已经做过简要说明。 默认情况下，类型检查器认为 `null` 与 `undefined` 可以赋值给任何类型。 `null` 与 `undefined` 是所有其它类型的一个有效值。 这也意味着，你阻止不了将它们赋值给其它类型，就算是你想要阻止这种情况也不行。`null`的发明者，Tony Hoare，称它为[价值亿万美金的错误](https://en.wikipedia.org/wiki/Null_pointer#History)。
 
 `--strictNullChecks` 标记可以解决此错误：当你声明一个变量时，它不会自动地包含 `null` 或 `undefined`。 你可以使用联合类型明确的包含它们：
 
