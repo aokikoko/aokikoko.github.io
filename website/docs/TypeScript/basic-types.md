@@ -5,8 +5,8 @@ sidebar_position: 1
 
 -----
 
-## 布尔值 boolean
-true or false
+## 布尔值 boolean 
+`true` or `false`
 ```typescript
 let isDone: boolean = false;
 ```
@@ -63,7 +63,7 @@ console.log(x[1].substr(1)); // Error, 'number' does not have 'substr'
 -----
 
 ## 枚举 enum
-enum类型是对JavaScript标准数据类型的一个补充。  
+`enum`类型是对JavaScript标准数据类型的一个补充。  
 像C#等其它语言一样，使用枚举类型可以为一组数值赋予友好的名字。
 ```typescript
 enum Color {Red = 1, Green, Blue}
@@ -140,6 +140,24 @@ function infiniteLoop(): never {
     while (true) {
     }
 }
+```
+-----
+## object
+
+`object` 表示非原始类型，也就是除 `number`，`string`，`boolean`，`symbol`，`null`或`undefined` 之外的类型。
+
+使用 `object` 类型，就可以更好的表示像 `Object.create` 这样的 `API`。例如：
+
+```typescript
+declare function create(o: object | null): void
+
+create({ prop: 0 }) // OK
+create(null) // OK
+
+create(42) // Error
+create('string') // Error
+create(false) // Error
+create(undefined) // Error
 ```
 
 -----
