@@ -1,6 +1,6 @@
 ---
 title: "[TS] ts-axios"
-sidebar_position: 8
+sidebar_position: 9
 ---
 
 -----
@@ -50,8 +50,8 @@ sidebar_position: 8
     }
   })
   ```
-
-```typescript
+### 编写入口文件
+```typescript title="ts-axios\src\index.ts"
 import { AxiosRequestConfig } from './types'
 
 function axios(config: AxiosRequestConfig) {
@@ -59,8 +59,9 @@ function axios(config: AxiosRequestConfig) {
 }
 
 export default axios
-
-// 项目中所有公共的类型定义文件
+```
+### 编写项目中所有公共的类型定义文件
+```typescript title="ts-axios\src\types\index.ts"
 export type Method =
   | 'get'
   | 'GET'
@@ -83,5 +84,26 @@ export interface AxiosRequestConfig {
   data?: any
   params?: any
 }
+```
+
+### 实现请求逻辑
+```typescript title="ts-axios\src\xhr.ts"
+import {AxiosRequestConfig} from './types'
+export default function xhr(config: AxiosRequestConfig): void {
+  // 利用XML对象发送逻辑
+  const { data = null, url, method='get' } = config
+
+  const request = new XMLHttpRequest()
+
+  request.open(method.toUpperCase(), url, async: true)
+
+  request.send(data)
+}
+```
+
+### 编写DEMO
+利用node的express库运行demo, 利用webpack作为demo的构建工具  
+1. 安装依赖
+```shell
 
 ```
