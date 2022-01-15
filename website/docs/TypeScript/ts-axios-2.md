@@ -1,5 +1,5 @@
 ---
-title: "[TS] ts-axios(2) - 基础功能"
+title: "[TS] ts-axios(2) - 基础功能(处理请求url)"
 sidebar_position: 10
 ---
 
