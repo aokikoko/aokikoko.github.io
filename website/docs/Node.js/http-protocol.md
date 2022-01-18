@@ -136,13 +136,11 @@ TCP 全名为传输控制协议，在 OSI 模型（由七层模型，分别为�
 
 TCP 是面向连接的协议，其显著的特征是在传输之前需要3次握手形成会话，如下图所示
 
-![TCP连接3次握手](http://assets.processon.com/chart_image/5c6cbe41e4b0c4e2165980f0.png)
+![TCP连接3次握手](assets/three.jpg)
 
-只有会话形成之后，服务器端和客户端之间才能互相发送数据。在创建会话的过程中，服务器端和客户端分别提供一个套接字，这个两个套接字共同形成一个连接。服务器端与客户端则通过套接字实现两者之间连接通信的操作。下面是一个基于 Socket 套接字编程的网络通信模型。
+只有会话形成之后，服务器端和客户端之间才能互相发送数据。在创建会话的过程中，服务器端和客户端分别提供一个套接字，这个两个套接字共同形成一个连接。服务器端与客户端则通过套接字实现两者之间连接通信的操作。
 
-![Socket 通信模型](http://assets.processon.com/chart_image/5c6cc241e4b0641c83fbd442.png)
-
-## 基本示例
+### 基本示例
 
 服务端：
 
@@ -154,6 +152,7 @@ const server = net.createServer((c) => {
   c.on('end', () => {
     console.log('client disconnected');
   });
+  // 给客户端发消息
   c.write('hello\r\n');
   c.pipe(c);
 });
@@ -172,8 +171,16 @@ const net = require('net');
 const client = net.createConnection({ port: 8124 }, () => {
   // 'connect' listener
   console.log('connected to server!');
+  // 当客户端与服务端建立连接成功以后, 客户端就可以给服务端发送数据
   client.write('world!\r\n');
+
+  // 当客户端与服务端建立连接成功以后, 我们可以监听终端的输入
+  // 获取终端的输入发送给服务端
+  process.stdin.on('data', data => {
+    client.write(data.toString().trim())
+  })
 });
+  // 当服务端发消息过来就触发data事件
 client.on('data', (data) => {
   console.log(data.toString());
   client.end();
@@ -255,6 +262,38 @@ client.on('end', () => {
 ## 案例：聊天室
 
 ### 初始化
+```javascript title="客户端代码 client.js"
+const net = require('net');
+
+const client = net.createConnection({
+  host: '127.0.0.1',
+  port: 8001
+})
+
+client.on('connect', () => {
+  console.log('客户端与服务端建立连接成功')
+  client.write('world')
+})
+
+client.on('data', data => {
+  console.log(data.toString())
+})
+```
+```javascript title="服务端代码 server.js"
+const net = require('net');
+
+const server = net.createServer()
+
+server.on('connection', clientSocket => {
+  clientSocket.on('data', data => {
+    console.log(data.toString())
+  })
+
+  clientSocket.write('hello')
+})
+
+server.listen(8001, () => console.log('server is running on port 8001'))
+```
 
 ### 核心需求
 
@@ -395,8 +434,6 @@ client.on('end', () => {
 
 - TCP 必须建立连接（三次握手建立连接）才能通信
 
-![TCP连接3次握手](http://assets.processon.com/chart_image/5c6cbe41e4b0c4e2165980f0.png)
-
 - TCP 只是负责数据的传输，不关心传输的数据格式问题
 
 ```json
@@ -411,7 +448,7 @@ client.on('end', () => {
 - Socket 就是与之通信的另一端，通过 Socket 接收或是发送数据
 - Socket 通信模型
 
-![Socket 通信模型](http://assets.processon.com/chart_image/5c6cc241e4b0641c83fbd442.png)
+![Socket 通信模型](assets/socketmodel.jpg)
 
 ## 第3章 构建 UDP 服务
 
@@ -431,6 +468,7 @@ client.on('end', () => {
 - 和 TCP 一样，位于网络传输层用于处理数据包
 
 - UDP 最大的特点是**无连接**
+  > 与TCP相比, TCP需要建立连接. 所以UDP速度快
 
 - UDP 传输**速度快**
 
