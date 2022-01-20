@@ -97,7 +97,7 @@ ReactDOM.render(element, document.getElementById('root'))
 
  **JSX是react的核心内容**
 
-注意：*JSX 不是标准的 JS 语法，是 JS 的语法扩展。脚手架中内置的 [@babel/plugin-transform-react-jsx](@babel/plugin-transform-react-jsx) 包，用来解析该语法。*
+注意：*JSX 不是标准的 JS 语法，是 JS 的语法扩展。脚手架中内置的 `@babel/plugin-transform-react-jsx` 包，用来解析该语法。*
 
 
 
