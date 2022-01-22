@@ -58,8 +58,10 @@ sidebar_position: 9
 > **3）强相关的处理用线程，弱相关的处理用进程**
 >
 > 什么叫强相关、弱相关？理论上很难定义，给个简单的例子就明白了。
+> 比如, js和dom强相关, 所以使用线程  
+> 百度和淘宝弱相关, 两个tab使用进程
 >
-> 一般的Server需要完成如下任务：消息收发、消息处理。“消息收发”和“消息处理”就是弱相关的任务，而“消息处理”里面可能又分为“消息解码”、“业务处理”，这两个任务相对来说相关性就要强多了。因此“消息收发”和“消息处理”可以分进程设计，“消息解码”、“业务处理”可以分线程设计。
+> 在服务端一般的Server需要完成如下任务：消息收发、消息处理。“消息收发”和“消息处理”就是弱相关的任务，而“消息处理”里面可能又分为“消息解码”、“业务处理”，这两个任务相对来说相关性就要强多了。因此“消息收发”和“消息处理”可以分进程设计，“消息解码”、“业务处理”可以分线程设计。
 >
 > **4）可能要扩展到多机分布的用进程，多核分布的用线程**
 >
@@ -79,25 +81,28 @@ sidebar_position: 9
 
 #### 利用cluster开启多进程
 
-```js
+```js  title="多进程模型"
 var cluster = require('cluster');
 var http = require('http');
 var numCPUs = require('os').cpus().length; // 获取CPU的个数
  
-if (cluster.isMaster) {
+if (cluster.isMaster) {  // 如果是主线程
     for (var i = 0; i < numCPUs; i++) {
-        cluster.fork();
+        cluster.fork();  // 开启子进程
     }
  
-    cluster.on('exit', function(worker, code, signal) {
+    cluster.on('exit', function(worker, code, signal) {  // 监听进程退出
         console.log('worker ' + worker.process.pid + ' died');
     });
-} else {
+} else {  // else走子线程逻辑
     http.createServer(function(req, res) {
         res.writeHead(200);
         res.end("hello world\n");
     }).listen(8000);
 }
+
+// 判断如果是主进程, 通过cpu核数判断, 去fork子进程
+// 如果不是主进程, 就创建http服务
 ```
 
 稍微优化下：
@@ -125,8 +130,8 @@ ab是apache自带的压力测试工具。推荐大家用mac
 
 `ab -n1000 -c20 '192.168.31.25:8000/'`
 
-- n 请求数量
-- c 并发数
+- n 请求数量  
+- c 并发数   // 这1000个请求中会有多少同时发出去
 
 #### nodejs调试方法
 
