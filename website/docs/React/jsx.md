@@ -1,5 +1,5 @@
 ---
-title: "[React] "
+title: "[React] JSX语法使用简介"
 sidebar_position: 1
 ---
 
@@ -372,20 +372,6 @@ base.css样式文件
   background-color: pink;
 }
 ```
-
-## 练习
-
-```jsx
-const list = [
-  { id: 1, name: "刘德华", content: "给我一杯忘情水" },
-  { id: 2, name: "五月天", content: "不打扰，是我的温柔" },
-  { id: 3, name: "毛不易", content: "像我这样优秀的人" }
-];
-```
-
-<!-- ![image-20210816202854520](images/image-20210816202854520.png) -->
-
-<!-- ![image-20210816203947396](images/image-20210816203947396.png) -->
 
 ## 总结
 
