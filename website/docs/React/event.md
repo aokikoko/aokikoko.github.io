@@ -197,37 +197,30 @@ bind不会执行这个函数, 而是返回一个新函数, 并且新函数的thi
 
 + 解决方案2：使用bind
 
-```js
+```jsx title="使用bind写法1"
   render() {
+    // bind把this绑定为render里的this
+    // render里的this没有问题, 因为是通过实例调用的
+    this.clickFn = this.clickFn.bind(this)
     return (
       <div>
-        <button onClick={this.handleClick.bind(this)}>点我</button>
+        <button onClick={this.clickFn}>点我</button>
       </div>
     )
   }
 ```
 
-```js
-class App extends React.Component {
-  state = {
-    msg: 'hello react'
-  }
-  handleClick() {
-    console.log(this.state.msg)
-  }
+```jsx  title="使用bind写法2"
   render() {
     return (
       <div>
-        <button onClick={this.handleClick.bind(this)}>点我</button>
+        <button onClick={this.clickFn.bind(this)}>点我</button>
       </div>
     )
   }
-}
 ```
 
-或者
-
-```js
+```jsx title="使用bind写法3"
 class App extends React.Component {
   constructor() {
   	super()
@@ -251,16 +244,39 @@ class App extends React.Component {
 
 缺点：把大量的js逻辑写在了JSX结构中，不好维护
 
+### 方式3: 类实例语法
+
+
 + 解决方案3：class实例方法
+
+```jsx title="错误示例"
+class App extends React.Component {
+  state = {
+    count: 0
+  }
+
+  handleClick = function () {
+    console.log(this)   // 此时虽然能执行了, 但是输出undefined
+    // 因为function内部有this, 但this取决于谁调用
+  }
+  render() {
+    return (
+      <div>
+        <button onClick={this.handleClick}>点我</button>
+      </div>
+    )
+  }
+}
+```
 
 ```js
 class App extends React.Component {
   state = {
-    msg: 'hello react'
+    count: 0
   }
 
   handleClick = () => {
-    console.log(this.state.msg)
+    console.log(this)  // 改成箭头函数相当于实例的属性了, 值还是一个箭头函数, 箭头函数内部没this
   }
   render() {
     return (
@@ -274,7 +290,41 @@ class App extends React.Component {
 
 **注意：这个语法是试验性的语法，但是有babel的转义，所以没有任何问题**
 
-# setState修改状态
+:::tip 类实例语法补充
+```js  
+class Person {  
+  constructor() {  
+    this.name = 'haha'  
+    this.age = 18  
+  }  
+  say() {  
+    console.log('哈哈')  
+  }  
+}  
+const p = new Person()
+console.log(p)
+
+// 注意: 打印的say方法不是在实例上, 而是在原型__proto__上
+// 而下面方式
+class Person {  
+  // constructor() {  
+  //   this.name = 'haha'  
+  //   this.age = 18  
+  // }  
+  name = 'haha'
+  age = 18
+  say = () => {  
+    console.log('哈哈')  
+  }  
+}  
+const p = new Person()
+console.log(p)
+// 这样写属性增加给创建的p对象上了
+// 相当于this.say = () => {}
+```
+:::
+
+## setState修改状态
 
 + 组件中的状态是可变的
 + 语法`this.setState({要修改的数据})`
@@ -306,223 +356,58 @@ class App extends React.Component {
 }
 ```
 
-# 表单处理
+### 对比vue
 
-> 我们在开发过程中，经常需要操作表单元素，比如获取表单的值或者是设置表单的值。
+:::tip 对比vue
+vue数据变视图会变  
+而react并不一定  
+因为vue双向数据绑定  
+react没有这个概念  
+vue劫持了数据的变化, 用了ES5的object.defineProperty  
+这个存在缺陷是无法监听数组的下标和长度变化  
+无法监听对象的新增的属性  
+无法监听对象的删除的变化  
+为了解决这个问题 vue3使用了Proxy代替  
+那么也导致了es6的Proxy在IE11的兼容性  
+vue3不支持ie11
 
-react中处理表单元素有两种方式：
+而react不采用defineProperty和Proxy来监听数据变化,  
+那么又不需要直接操作dom,  
+所以提供了setState, 更新state和DOM
+但需要开发者手动调用, 所以你也清楚何时更新dom
+:::
 
-+ 受控组件
-+ 非受控组件（DOM操作）
+### count++和count + 1的区别
+```jsx
+const num = 1 
+num+1 // num+1结果变成了num本身还是1, 因为没赋值
+num++ // num++ 等价于 num = num + 1, num的值发生变化 
+```
 
-## 受控组件基本概念
+### 状态不可变
 
-+ HTML中表单元素是可输入的，即表单用户并维护着自己的可变状态（value）。
-
-+ 但是在react中，可变状态通常是保存在state中的，并且要求状态只能通过`setState`进行修改。
-
-+ React中将state中的数据与表单元素的value值绑定到了一起，`由state的值来控制表单元素的值`
-+ 受控组件：**value值受到了react控制的表单元素** 
-
-<!-- ![](images/受控组件.png) -->
-
-## 受控组件使用步骤
-
-1. 在state中添加一个状态，作为表单元素的value值（控制表单元素的值）
-2. 给表单元素添加change事件，设置state的值为表单元素的值（控制值的变化）
-
-```js
-class App extends React.Component {
++ 核心理念: `状态不可变`
+> 不要直接修改react中state的值, 而是提供新的值
+> 直接修改react中state的值, 组件并不会更新
+```jsx
   state = {
-    msg: 'hello react'
+    count: 0, 
+    msg: 'hello world',
+    user: {
+      name: 'zs'
+      age: 18,
+    }
+    list: ['张三', '李四', '王五']
   }
-
-  handleChange = (e) => {
+  clickFn = () => {
     this.setState({
-      msg: e.target.value
+      count: 1,
+      msg: 'hello',
+      user: {
+        ...this.state.user,
+        name: 'ls'
+      }, 
+      list: this.state.list.filter((item) => item !== '李四')
     })
   }
-
-  render() {
-    return (
-      <div>
-        <input type="text" value={this.state.msg} onChange={this.handleChange}/>
-      </div>
-    )
-  }
-}
 ```
-
-## 常见的受控组件
-
-+ 文本框、文本域、下拉框（操作value属性）
-+ 复选框（操作checked属性）
-
-```js
-class App extends React.Component {
-  state = {
-    usernmae: '',
-    desc: '',
-    city: "2",
-    isSingle: true
-  }
- 
-  handleName = e => {
-    this.setState({
-      name: e.target.value
-    })
-  }
-  handleDesc = e => {
-    this.setState({
-      desc: e.target.value
-    })
-  }
-  handleCity = e => {
-    this.setState({
-      city: e.target.value
-    })
-  }
-  handleSingle = e => {
-    this.setState({
-      isSingle: e.target.checked
-    })
-  }
-
-  render() {
-    return (
-      <div>
-        姓名：<input type="text" value={this.state.username} onChange={this.handleName}/>
-        <br/>
-        描述：<textarea value={this.state.desc} onChange={this.handleDesc}></textarea>
-        <br/>
-        城市：<select value={this.state.city} onChange={this.handleCity}>
-          <option value="1">北京</option>
-          <option value="2">上海</option>
-          <option value="3">广州</option>
-          <option value="4">深圳</option>
-        </select>
-        <br/>
-        是否单身：<input type="checkbox" checked={this.state.isSingle} onChange={this.handleSingle}/>
-      </div>
-    )
-  }
-}
-```
-
-## 多表单元素的优化
-
-问题：每个表单元素都需要一个单独的事件处理程序，处理太繁琐
-
-优化：使用一个事件处理程序处理多个表单元素
-
-步骤
-
- + 给表单元素添加name属性，名称与state属性名相同
- + 根据表单元素类型获取对应的值
- + 在事件处理程序中通过`[name]`修改对应的state
-
-```js
-class App extends React.Component {
-  state = {
-    username: '',
-    desc: '',
-    city: "2",
-    isSingle: true
-  }
- 
-  handleChange = e => {
-    let {name, type, value, checked} = e.target
-    console.log(name, type, value, checked)
-    value = type === 'checkbox' ? checked : value
-    console.log(name, value)
-    this.setState({
-      [name]: value
-    })
-  }
-  render() {
-    return (
-      <div>
-        姓名：<input type="text" name="username" value={this.state.username} onChange={this.handleChange}/>
-        <br/>
-        描述：<textarea name="desc" value={this.state.desc} onChange={this.handleChange}></textarea>
-        <br/>
-        城市：<select name="city" value={this.state.city} onChange={this.handleChange}>
-          <option value="1">北京</option>
-          <option value="2">上海</option>
-          <option value="3">广州</option>
-          <option value="4">深圳</option>
-        </select>
-        <br/>
-        是否单身：<input type="checkbox" name="isSingle" checked={this.state.isSingle} onChange={this.handleChange}/>
-      </div>
-    )
-  }
-}
-```
-
-## 非受控组件
-
-> 非受控组件借助于ref，使用原生DOM的方式来获取表单元素的值
-
-使用步骤
-
-+ 调用`React.createRef()`方法创建一个ref
-
-```js
-constructor() {
-  super()
-  this.txtRef = React.createRef()
-}
-```
-
-+ 将创建好的ref对象添加到文本框中
-
-```js
-<input type="text" ref={this.txtRef}/>
-```
-
-+ 通过ref对象获取文本框的值
-
-```js
-handleClick = () => {
-  console.log(this.txtRef.current.value)
-}
-```
-
-非受控组件用的不多，推荐使用受控组件
-
-
-
-# 综合案例
-
-评论列表案例
-
-## 列表展示功能
-
-渲染评论列表（列表渲染）
-
-+ 在state中初始化评论列表数据
-+ 使用数组的map方法遍历列表数据
-+ 给每个li添加key属性
-
-## 发表评论功能
-
-获取评论信息，评论人和评论内容（受控组件）
-
-+ 使用受控组件的方式获取评论数据
-
-发表评论，更新评论列表（更新状态）
-
- + 给comments增加一条数据
-
-边界处理
-
- + 清空内容
- + 判断非空
-
-## 清空评论功能
-
-+ 给清空评论按钮注册事件
-
-+ 清空评论列表
-+ 没有更多评论的处理
