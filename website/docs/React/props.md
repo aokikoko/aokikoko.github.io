@@ -2,16 +2,8 @@
 title: "[React] 组件通讯"
 sidebar_position: 5
 ---
-# 学习目标
 
-+ 组件通讯介绍以及为什么要有组件通讯
-+ 组件的props
-+ 组件通讯的三种方式 父传子  子传父  兄弟组件
-+ Context组件通讯
-+ props深入
-+ todomvc
-
-# 组件通讯
+## 组件通讯
 
 **组件**是独立且封闭的单元，默认情况下，只能使用组件自己的数据。在组件化过程中，我们将一个完整的功能
 拆分成多个组件，以更好的完成整个应用的功能。而在这个过程中，多个组件之间不可避免的要共享某些数据
@@ -28,24 +20,31 @@ sidebar_position: 5
 
 ### 函数组件通讯
 
-子组件
-
-```js
-function Hello(props) {
-    console.log(props)
-    return (
-    	<div>接收到数据：{props.name}</div>
-    )
-}
-```
-
 父组件
 
 ```js
 <Hello name="jack" age={19} />
 ```
 
+子组件
+
+```js
+function Hello({name, age}) {
+    // console.log(props)
+    return (
+    	<div>接收到数据：{name}</div>
+    )
+}
+```
+
+
 ### 类组件通讯
+
+父组件
+
+```js
+<Hello name="jack" age={19} />
+```
 
 子组件
 
@@ -59,28 +58,32 @@ class Hello extends React.Component {
 }
 ```
 
-父组件
-
-```js
-<Hello name="jack" age={19} />
-```
-
 ### props的特点
 
 + 可以给组件传递任意类型的数据
-+ props是只读的，不允许修改props的数据，单向数据流
++ props是只读的，不允许修改props的数据，单向数据流: 数据流动从父组件流动到子组件
+  父组件数据变了子组件跟着更新, 子组件数据变了父组件不变. 除非子传父
 
 + 注意：在类组件中使用的时候，**需要把props传递给super()**，否则构造函数无法获取到props
 
 ```js
-class Hello extends React.Component {
-    constructor(props) {
-        // 推荐将props传递给父类构造函数
-        super(props)
+export default class Demo extends Component {
+  constructor(props) {
+    super(props);
+    console.log(this.props)
+    this.state = {
+      money: this.props.money + 100
     }
-    render() {
-    	return <div>接收到的数据：{this.props.age}</div>
-    }
+  }
+  render() {
+    console.log(this.props)
+    return (
+      <div>
+        <h3>类组件</h3>
+        <div>{this.state.money}</div>
+      </div>
+    );
+  }
 }
 ```
 
