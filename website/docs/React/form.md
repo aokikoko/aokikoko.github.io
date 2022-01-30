@@ -245,3 +245,125 @@ handleClick = () => {
 
 + 清空评论列表
 + 没有更多评论的处理
+
+## 代码展示
+
+```jsx
+import React from "react";
+import ReactDOM from "react-dom";
+
+import "./index.css";
+
+class App extends React.Component {
+  state = {
+    list: [
+      {
+        id: 1,
+        name: "王思聪",
+        content: "想你的夜",
+      },
+      {
+        id: 2,
+        name: "王健林",
+        content: "顶一个小目标",
+      },
+      {
+        id: 3,
+        name: "马云",
+        content: "我对钱不感兴趣",
+      },
+    ],
+    name: "",
+    content: "",
+  };
+  render() {
+    return (
+      <div className="app">
+        <div>
+          <input
+            name="name"
+            onChange={this.handleChange}
+            className="user"
+            type="text"
+            placeholder="请输入评论人"
+            value={this.state.name}
+          />
+          <br />
+          <textarea
+            className="content"
+            cols="30"
+            rows="10"
+            placeholder="请输入评论内容"
+            value={this.state.content}
+            onChange={this.handleChange}
+            name="content"
+          />
+          <br />
+          <button onClick={this.add}>发表评论</button>
+          <button onClick={this.clear}>清空评论</button>
+        </div>
+        {this.renderList()}
+      </div>
+    );
+  }
+
+  renderList() {
+    if (this.state.list.length === 0) {
+      return <div className="no-comment">暂无评论</div>;
+    }
+    return (
+      <ul>
+        {this.state.list.map((item) => {
+          return (
+            <li key={item.id}>
+              <h3>评论人：{item.name}</h3>
+              <p>评论内容：{item.content}</p>
+              {/* 第一种使用箭头函数解决传参问题 */}
+              {/* <button onClick={() => this.del(item.id)}>删除</button> */}
+              {/* 第二种使用bind解决传参问题 */}
+              <button onClick={this.del.bind(this, item.id)}>删除</button>
+            </li>
+          );
+        })}
+      </ul>
+    );
+  }
+
+  clear = () => {
+    this.setState({
+      list: [],
+    });
+  };
+
+  del = (id) => {
+    this.setState({
+      list: this.state.list.filter((item) => {
+        return item.id !== id;
+      }),
+    });
+  };
+
+  handleChange = (e) => {
+    const {name, value} = e.target;
+    this.setState({
+      [name]: value
+    })
+  }
+
+  add = () => {
+    const {name, content, list} = this.state
+    if (!name || !content) {
+      return alert('请输入评论人或评论内容')
+    }
+    this.setState({
+      list: [{id: Date.now(), name, content},...list],
+      name: '',
+      content: ''
+    })
+  }
+}
+
+// 渲染组件
+ReactDOM.render(<App />, document.getElementById("root"));
+
+```

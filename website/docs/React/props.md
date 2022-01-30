@@ -248,9 +248,9 @@ const { Provider, Consumer } = React.createContext()
 3. Provider组件：用来提供数据
 4. Consumer组件：用来消费数据
 
-# props深入
+## props深入
 
-## children属性
+### children属性
 
 children属性：表示该组件的子节点，只要组件有子节点，props就有该属性
 
@@ -265,11 +265,12 @@ function Hello(props) {
   )
 }
 
-<Hello>我是子节点</Hello>
+<Hello>我是子节点</Hello> // 等于如下
+<Hello chiledren="我是子节点"></Hello>
 
 ```
 
-## props校验
+### props校验
 
 目的：校验接收的props的数据类型，增加组件的健壮性
 
@@ -334,7 +335,7 @@ optionalObjectWithShape: PropTypes.shape({
 
 
 
-## props默认值
+### props默认值
 
 场景：分页组件  每页显示条数
 作用：给 props 设置默认值，在未传入 props 时生效
@@ -355,8 +356,3 @@ App.defaultProps = {
 <App />
 ```
 
-
-
-## 类的静态属性static
-
-# todos
