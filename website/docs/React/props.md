@@ -278,22 +278,21 @@ function Hello(props) {
 
 如果传入的数据格式不对，可能会导致组件内部报错。**组件的使用者不能很明确的知道错误的原因。**
 
-<!-- ![](images/props校验.png) -->
+![](assets/props校验.png)
 
 props校验允许在创建组件的时候，就约定props的格式、类型等
 
-<!-- ![](images/props校验02.png) -->
+![](assets/props校验02.png)
 
 作用：规定接收的props的类型必须为数组，如果不是数组就会报错，增加组件的健壮性。
 
-<!-- ![](images/props校验03.png) -->
+![](assets/props校验03.png)
 
 
 
 ### 使用步骤
 
-1. 安装包 prop-types （yarn add prop-types / npm i props-types）
-
+1. 安装包 prop-types （yarn add prop-types / npm i props-types）  
 2. 导入 prop-types 包
 3. 使用组件名.propTypes = {} 来给组件的props添加校验规则
 4. 校验规则通过 PropTypes 对象来指定
@@ -337,7 +336,7 @@ optionalObjectWithShape: PropTypes.shape({
 
 ### props默认值
 
-场景：分页组件  每页显示条数
+场景：分页组件 每页显示条数
 作用：给 props 设置默认值，在未传入 props 时生效
 
 ```js
@@ -355,4 +354,87 @@ App.defaultProps = {
 // 不传入pageSize属性
 <App />
 ```
+
+## 类的静态属性和实例属性
+
+### 实例成员
+
+```jsx title="实例成员"
+class Person {
+    constructor(name, age) {
+        this.name = name
+        this.age = age
+    }
+
+    sayHi() {
+      console.log('嗨')
+    }
+}
+
+const p = new Person('zs', 17)
+
+console.log(p)
+// p就是所谓的实例, 通过实例调用的属性或方法
+// 称之为实例成员（属性或者方法）
+// name和age就是实例的， 所以如何调用呢
+// p.name  p.age这样调用
+// 这种通过实例访问的, 叫做实例成员, 或者叫做实例属性实例方法都可以
+
+```
+
+```jsx title="实例成员"
+class Person {
+    constructor(name, age) {
+        this.name = name
+        this.age = age
+    }
+
+    sayHi() {
+      console.log('嗨')
+    }
+}
+
+Person.aa = 'bb'
+
+const p = new Person('zs', 17)
+
+// Person.aa 
+// Person是个类， 他身上有个aa
+// Person身上的aa不能用p去调用
+// 因为class相当于  function Person() {}
+// 但是原型链提到过
+// 构造函数 原型 实例
+// 实例只能继承原型的, 不能访问构造函数上面的aa
+// 比如p.aa 没法访问 输出undefined
+// 那要怎么访问?
+// 只能通过类本身访问, 比如Person.aa
+// 所以引出静态成员
+```
+### 静态成员
+
+```jsx
+// 通过类或者构造函数本身才能访问到属性或者方法叫做静态成员
+// 静态成员可以写到类里面去
+class Person {
+    constructor(name, age) {
+        this.name = name
+        this.age = age
+    }
+
+    sayHi() {
+      console.log('嗨')
+    }
+
+    aa = 'bb'  // 这么写不是静态成员, 是类实例的
+    // aa = 'bb' 是直接增加到p身上的
+
+
+    // 如果加static关键字代表静态
+    static aa = 'bb' // 这么写就不是给实例增加的, 是给整个Person增加的
+    // 通过console.log(p.aa) 访问不到
+    // 而是通过Person.aa, 也就是类本身访问
+
+}
+```
+
 
