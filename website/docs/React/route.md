@@ -107,11 +107,11 @@ ReactDOM.render(<App />, document.getElementById('root'))
 
 ```
 
-## 路由基本使用
+## React 路由基本使用
 
 官网：https://reactrouter.com/
 
-## 基本步骤
+### 基本步骤
 
 + 安装
 
@@ -121,13 +121,18 @@ yarn add react-router-dom
 
 + `react-router-dom`这个包提供了三个核心的组件
 
-```js
+```jsx 
 import { HashRouter, Route, Link } from 'react-router-dom'
+// Link: 导航链接 代替a标签
+// Route: 指定路由规则
+// HashRouter: 整个路由组件, 类似于vue中的VueRouter,
+// 我们项目中想要使用react-router的话，必须使用HashRouter包裹整个内容
+// 意思是项目中必须要有个路由对象， 这个对象叫HashRouter 
 ```
 
 + 使用`HashRouter`包裹整个应用，一个项目中只会有一个Router
 
-```js
+```jsx
 <Router>
     <div className="App">
     // … 省略页面内容
@@ -135,43 +140,71 @@ import { HashRouter, Route, Link } from 'react-router-dom'
 </Router>
 ```
 
-+ 使用Link指定导航链接
++ 使用Link替代a标签指定导航链接
 
-```js
+```jsx
 <Link to="/first">页面一</Link>
 <Link to="/two">页面二</Link>
 ```
 
 + 使用`Route`指定路由规则
 
-```js
+```jsx
 // 在哪里写的Route,最终匹配到的组件就会渲染到这
 <Route path="/first" component={First}></Route>
 ```
 
-## Router详细说明
+### Router详细说明
 
 + Router 组件：包裹整个应用，一个 React 应用只需要使用一次
-+ 两种常用 Router：`HashRouter` 和 `BrowserRouter`  
++ 两种常用 Router：`HashRouter` 和 `BrowserRouter`, 对比vue路由模式, vue路由模式有hash模式和history模式   
 + HashRouter：使用 URL 的哈希值实现（http://localhost:3000/#/first）
   - 原理：监听 window 的 `hashchange` 事件来实现的
 + （推荐）BrowserRouter：使用 H5 的 history API 实现（http://localhost:3000/first）
   - 原理：监听 window 的 `popstate` 事件来实现的
 
-最佳实践
 
-```js
-import { HashRouter as Router, Route, Link } from 'react-router-dom'
+```jsx title="最佳实践"
+import { BrowserRouter as Router, Route, Link } from "react-router-dom";
+
+class App extends React.Component {
+  render() {
+    return (
+      <Router>
+        <div>
+          <h1>app组件</h1>
+          <ul>
+            <li>
+              <Link to="/home">首页</Link>
+            </li>
+            <li>
+              <Link to="/my">我的</Link>
+            </li>
+            <li>
+              <Link to="/friend">朋友</Link>
+            </li>
+          </ul>
+          <Route path="/home" component={Home}></Route>
+          <Route path="/my" component={My}></Route>
+          <Route path="/friend" component={Friend}></Route>
+        </div>
+      </Router>
+    );
+  }
+}
 ```
 
-## 路由的执行过程
+## React路由的执行过程
 
+:::tip React路由的执行过程
 1. 点击 Link 组件（a标签），修改了浏览器地址栏中的 url
-2. React 路由监听到地址栏 url 的变化  hashChange  popState
-3. React 路由内部遍历所有 Route 组件，使用路由规则（path）与 pathname（hash）进行匹配
-4. 当路由规则（path）能够匹配地址栏中的 pathname（hash） 时，就展示该 Route 组件的内容
-
+2. React 路由监听到地址栏 url 的变化  hash模式监听hashChange事件  broswer模式监听popState事件. 这样react路由就知道路由发生变化了  
+3. React 路由内部遍历所有 Route 组件，也就是找到所有的路由规则(path). 挨个遍历比较, 比较地址栏中的地址跟组件路径是否匹配, 比如/home, /my. 使用路由规则（path）与 pathname（hash）进行匹配  
+4. 当路由规则（path）能够匹配地址栏中的 pathname（hash） 时，就展示该 Route 组件的内容, 不匹配不显示  
+:::
 ## Link与NavLink
+
+[A special version of the Link标签 that will add styling attributes to the rendered element when it matches the current URL.](https://v5.reactrouter.com/web/api/NavLink)
 
 `Link`组件最终会渲染成a标签，用于指定路由导航
 
