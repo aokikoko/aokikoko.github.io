@@ -217,7 +217,7 @@ class App extends React.Component {
 + activeClass: 用于指定高亮的类名，默认`active`
 + exact: 精确匹配，表示必须精确匹配类名才生效
 
-## Route
+## Route组件
 
 - path 的说明
   - 默认情况下，/能够匹配任意/开始的路径
@@ -227,7 +227,7 @@ class App extends React.Component {
 - exact 的说明， exact 表示精确匹配某个路径
   - 一般来说，如果路径配置了 /， 都需要配置 exact 属性
 
-## Switch与404
+### Switch与404
 
 + 通常，我们会把`Route`包裹在一个`Switch`组件中
 
@@ -243,7 +243,7 @@ class App extends React.Component {
 </Switch>
 ```
 
-# 嵌套路由的配置
+## 嵌套路由的配置
 
 + 在React中，配置嵌套路由非常的简单，因为`Route`就是一个组件，可以在任意想配置的地方进行配置
 
@@ -254,7 +254,7 @@ class App extends React.Component {
 <Route path="/home/list" component={List} />
 ```
 
-# 编程式导航
+## 编程式导航
 
 +  场景：点击登录按钮，登录成功后，通过代码跳转到后台首页，如何实现？
 +  编程式导航：通过 JS 代码来实现页面跳转
@@ -272,7 +272,7 @@ class Login extends Component {
 }
 ```
 
-# 动态路由与路由参数获取
+## 动态路由与路由参数获取
 
 + 可以使用`:id`的方式来配置动态的路由参数
 
