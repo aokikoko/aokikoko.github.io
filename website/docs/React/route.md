@@ -262,6 +262,18 @@ class App extends React.Component {
 +  push(path)：跳转到某个页面，参数 path 表示要跳转的路径
 +  go(n)： 前进或后退到某个页面，参数 n 表示前进或后退页面数量（比如：-1 表示后退到上一页）
 
+
+:::tip 对比vue
+对比Vue, 采用的是this.$route.push
+:::
+
+:::tip react实现
+当我们使用route渲染组件的时候, Route组件会自动给组件传递三个属性  
+history  
+location  
+match  
+:::
+
 ```js
 class Login extends Component {
     handleLogin = () => {
@@ -276,6 +288,10 @@ class Login extends Component {
 
 + 可以使用`:id`的方式来配置动态的路由参数
 
+:::tip 对比vue
+this.$route.params.id
+:::
+
 ```js
 // 可以匹配 /users/1  /users/2  /users/xxx
 <Route path="/users/:id" component={Users} />
@@ -283,9 +299,18 @@ class Login extends Component {
 
 + 在组件中，通过`props`可以接收到路由的参数
 
-```js
-render(){
-    console.log(this.props.match.params)
+```jsx
+export default class Detail extends React.Component {
+  render() {
+    const { match } = this.props;
+    console.log(match);
+    return <div>商品详情 --- {this.props.match.params.id}</div>;
+  }
 }
 ```
+:::tip props中的match属性
+params  
+url  
+isExact  
+:::
 
