@@ -304,8 +304,8 @@ function todos() {
 1. **Store** 是把actioin、reducer联系到一起的对象 => 利用Redux的API进行创建createStore()
 2. 提供 [`getState()`](https://www.cntofu.com/book/4/docs/api/Store.md#getState) 方法获取 state
 3. 提供 [`dispatch(action)`](https://www.cntofu.com/book/4/docs/api/Store.md#dispatch) 方法更新 state；
-4. 通过 [`subscribe(listener)`](https://www.cntofu.com/book/4/docs/api/Store.md#subscribe) 注册监听器;
-5. 通过 [`subscribe(listener)`](https://www.cntofu.com/book/4/docs/api/Store.md#subscribe) 返回的函数注销监听器。
+4. 通过 [`subscribe(() => {})`](https://www.cntofu.com/book/4/docs/api/Store.md#subscribe) 注册监听器, 只要state发生了变化, 这个订阅的回调函数就会执行;
+5. 通过 [`unsubscribe()`](https://www.cntofu.com/book/4/docs/api/Store.md#subscribe) 函数调用了就会取消订阅。
 
 `核心代码`
 
@@ -371,12 +371,7 @@ unsubscribe();
 1. 注意代码顺序：先创建store，启动监听，修改数据时自动在监听里面获取最新数据
 2. 总结梳理整个流程
 
-## 练习
 
-`内容`
-
-1. 梳理每部分的职责和特点（作用是什么，怎么写）
-2. 按照+2的action，写-2的action（注意代码位置）
 
 ## 小结
 
@@ -385,11 +380,13 @@ unsubscribe();
 3. 纯函数，目前只需要知道的特点是不能直接修改数据
 4. 目前不考虑异步action的情况
 
-# react-redux（结合react和hooks）
+---
+
+## react-redux（结合react和hooks）
 
 - [ ] 在react项目中如何使用redux
 
-## 在react项目中使用redux
+### 在react项目中使用redux
 
 `目标`：在脚手架创建的react项目中使用最基本的redux
 
@@ -403,75 +400,55 @@ unsubscribe();
 `store/actions.js`
 
 ```js
-export const add = (count) => {
-  return {
-    type: 'ADD',
-    count,
-  }
-}
+export const add = () => ({ type: "ADD" });
+export const minus = () => ({ type: "MINUS" });
 ```
 
 `store/reducers.js`
 
 ```js
-export const addReducer = (
-  state = {
-    count: 1,
-  },
-  action
-) => {
-  switch (action.type) {
-    case 'ADD':
-      return Object.assign({}, state, { count: action.count })
-    default:
-      return state
+function reducer(state = 0, action) {
+  console.log(action);
+  if (action.type === "ADD") {
+    return state + 1;
   }
+  if (action.type === "MINUS") {
+    return state - 1;
+  }
+  return state;
 }
 
+export default reducer;
 ```
 
 `index.js`
 
 ```js
-import ReactDOM from 'react-dom'
-import App from './App.js'
-import { createStore } from 'redux'
-import { addReducer } from "./store/reducers"
-let store = createStore(addReducer)
-ReactDOM.render(<App store={store}></App>, document.querySelector('#root'))
-store.subscribe(() => {
-  ReactDOM.render(<App store={store}></App>, document.querySelector('#root'))
-})
+import React from "react";
+import ReactDom from "react-dom";
+import store from "./store";
+import { add, minus } from "./store/action";
 
-```
 
-`App.js`
-
-```js
-import { add } from './store/actions'
-const App = (props) => {
-  const {
-    store: { getState, dispatch },
-  } = props
-  const { count } = getState()
+function App() {
   return (
     <div>
-      <h3>App</h3>
-      <p>{count}</p>
-      <button
-        onClick={() => {
-          dispatch(add(2))
-        }}
-      >
-        点我+2
-      </button>
-    </div>
+    <h1>根组件</h1>
+    <div>我被点击了{store.getState()}次</div>
+    <button onClick={() => store.dispatch(add())}>+1</button>
+    <button onClick={() => store.dispatch(minus())}>-1</button>
+  </div>
   )
 }
 
-export default App
+ReactDom.render(<App />, document.getElementById("root"));
 
+store.subscribe(() => {
+  console.log('变化了')
+  ReactDom.render(<App />, document.getElementById("root"));
+})
 ```
+
 
 `问题`：
 
