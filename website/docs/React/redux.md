@@ -559,7 +559,7 @@ export default connect(mapStateToProps, mapDispatchToProps)(App)
 3. 需要知道Provider和connect的作用
 4. connect是高阶组件 => 把redux里面数据和修改数据的方法映射到组件中为了使用方便
 
-## react-redux结合hooks用法-useSelector
+### react-redux结合hooks用法-useSelector
 
 `目标`：结合hooks使用react-redux
 
@@ -607,7 +607,7 @@ export default App
 
 - Provider组件依然需要使用
 
-## react-redux结合hooks用法-useDispatch
+### react-redux结合hooks用法-useDispatch
 
 `目标`：结合hooks使用react-redux，修改数据
 
