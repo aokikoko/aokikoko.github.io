@@ -746,3 +746,27 @@ export default App
 
 1. redux-thunk是专门处理redux中异步action的中间件
 2. 当要异步操作数据变化时，需要用redux-thunk包
+
+
+## 各包使用的api
+
+```jsx
+/**
+ * redux
+ *  createStore, applyMiddleware, combineReducers
+ * react-redux
+ *  Provider useSelector useDispatch
+ * redux-thunk
+ *  import thunk from 'redux-thunk'
+ */
+
+```
+
+```js
+1.创建store
+2.创建reducer
+3.不着急创建action, 因为不清楚未来多少action, 先将store与组件建立关系
+4.安装react-thunk或者saga中间件, 创建action
+5.将请求封装到aciton里(因为action里可以写异步代码), 并在组件导入actions,利用useEffect与useDispatch发送请求得到数据,
+6.actions中dispatch一个action
+```
