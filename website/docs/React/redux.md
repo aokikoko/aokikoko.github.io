@@ -746,3 +746,21 @@ export default App
 
 1. redux-thunk是专门处理redux中异步action的中间件
 2. 当要异步操作数据变化时，需要用redux-thunk包
+
+
+## 各包使用的api
+
+```jsx
+/**
+ * redux
+ *  createStore, applyMiddleware, combineReducers
+ * react-redux
+ *  Provider useSelector useDispatch
+ * redux-thunk
+ *  import thunk from 'redux-thunk'
+ */
+
+```
+
+流程草图
+![redux flow](assets/流程草图.JPG)
