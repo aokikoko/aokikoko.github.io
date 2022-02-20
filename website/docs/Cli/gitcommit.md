@@ -1,7 +1,20 @@
 ---
-title: "[Cli] Git消息提交规范"
-sidebar_position: 2
+title: "[Cli] Git提交规范之消息提交"
+sidebar_position: 3
 ---
+
+`标准化大厂编程规范解决方案之 ESLint + Git Hooks(3)`
+
+<!--truncate-->
+
+在前面我们通过 `prettier + ESLint` 解决了代码格式的问题，但是我们之前也说过 **编程规范** 指的可不仅仅只是 **代码格式规范** 。
+除了 **代码格式规范** 之外，还有另外一个很重要的规范就是 **`git` 提交规范！**
+
+在现在的项目开发中，通常情况下，我们都会通过 `git` 来管理项目。只要通过 `git` 来管理项目，那么就必然会遇到使用 `git` 提交代码的场景
+
+当我们执行 `git commit -m "描述信息"` 的时候，我们知道此时必须添加一个描述信息。
+而很多人的描述 “天马行空” ，这样就会导致别人在看你的提交记录时，看不懂你说的什么意思？不知道你当前的这次提交到底做了什么事情？会不会存在潜在的风险？
+所以 **`git` 提交规范** 势在必行。
 
 对于 **`git` 提交规范** 来说，不同的团队可能会有不同的标准，目前使用较多的 [Angular 团队规范](https://github.com/angular/angular.js/blob/master/DEVELOPERS.md#-git-commit-guidelines) 延伸出的 [Conventional Commits specification（约定式提交）](https://www.conventionalcommits.org/zh-hans/v1.0.0/) 为例，详解 **`git` 提交规范**
 
@@ -37,11 +50,11 @@ sidebar_position: 2
 
 要是每次都这么写，写到猴年马月了！
 
-所以需要使用 Commitizen 解决这个问题
+所以需要使用 [Commitizen 助你规范化提交代码](#Commitizen)
 
-## Commitizen
+## Commitizen {#Commitizen}
 
-如果严格安装 **约定式提交规范**， 来手动进行代码提交的话，那么是一件非常痛苦的事情，但是 **git 提交规范的处理** 又势在必行，那么怎么办呢？
+通过上面我们了解到如果严格按照[约定式提交规范](https://www.conventionalcommits.org/zh-hans/v1.0.0/)， 来手动进行代码提交的话，那么是一件非常痛苦的事情，但是 **git 提交规范的处理** 又势在必行，那么怎么办呢？
 经过很多人的冥思苦想, 出现了一种叫做 **git 提交规范化工具** 的东西，而 `commitizen` 就是其中的佼佼者！
 `commitizen` 仓库名为 [cz-cli](https://github.com/commitizen/cz-cli) ，它提供了一个 `git cz` 的指令用于代替 `git commit`，简单一句话介绍它：
 
@@ -117,11 +130,16 @@ sidebar_position: 2
 
 那么如果有马虎的同事，忘记了使用 `git cz` 指令，直接就提交了怎么办呢？
 
-那么有没有方式来限制这种错误的出现呢？
+那么有没有方式来限制这种错误的出现呢？答案是有的！
 
-所以需要 Git Hooks
+所以需要 [Git Hooks](#githooks)
 
-## Git Hooks
+## Git Hooks {#githooks}
+
+上面我们使用了 `git cz` 来代替了 `git commit` 实现了规范化的提交诉求，但是依然存在着有人会忘记使用的问题。  
+那么我们应该如何去进行解决。
+
+先来明确一下我们最终要实现的效果：
 
 > 我们希望：
 >
@@ -200,7 +218,7 @@ sidebar_position: 2
 
 注意：**`npm` 需要在 7.x 以上版本！！！！！**
 
-那么下面分别来去安装一下这两个工具：
+那么下面分别安装一下这两个工具：
 
 ### commitlint
 
@@ -337,3 +355,5 @@ husky - commit-msg hook exited with code 1 (error)
 现在还缺少一个 **规范化的处理** ，那就是 **代码格式提交规范处理！**
 
 也就是说目前位置做的都是**git 的消息提交规范**, 但是我们的**代码格式提交规范**还没有做
+
+所以需要下一步[通过 pre-commit 处理提交时代码规范](./precommit.md)

@@ -1,6 +1,6 @@
 ---
 title: "[Cli] npm升级版本后仍然显示为原版本"
-sidebar_position: 4
+sidebar_position: 5
 ---
 
 ## 现象描述
