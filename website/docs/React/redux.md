@@ -762,11 +762,5 @@ export default App
 
 ```
 
-```js
-1.创建store
-2.创建reducer
-3.不着急创建action, 因为不清楚未来多少action, 先将store与组件建立关系
-4.安装react-thunk或者saga中间件, 创建action
-5.将请求封装到aciton里(因为action里可以写异步代码), 并在组件导入actions,利用useEffect与useDispatch发送请求得到数据,
-6.actions中dispatch一个action
-```
+流程草图
+![redux flow](assets/流程草图.JPG)
