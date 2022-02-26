@@ -3,7 +3,7 @@ title: "[JS] 数据类型"
 sidebar_position: 3
 ---
 
-`摘记<Javascript高级程序设计> -- 马特 2020版 第二章 3-4 数据类型`
+`摘记<Javascript高级程序设计> -- 马特 2020版 第三章`
 
 <!--truncate-->
 
@@ -239,6 +239,14 @@ console.log(age); // 28
 console.log(anotherAge); // 30 
 ```
 
+``前置操作符``: 先自加或自减 再使用
+``后置操作符``: 先使用 后自加或自减
+```js
+let i = 1
+console.log(++i + 2)  // 4
+console.log(i++ + 2)  // 3 打印完后i是2
+```
+
 ### 布尔操作符
 
 布尔操作符一共有 3 个：`逻辑非、逻辑与和逻辑或`。
@@ -286,3 +294,89 @@ let found = true;
 let result = (found && someUndeclaredVariable); // 这里会出错
 console.log(result); // 不会执行这一行
 ```
+上面的代码之所以会出错，是因为 someUndeclaredVariable 没有事先声明，所以当逻辑与操作符对它求值时就会报错。变量 found 的值是 true，逻辑与操作符会继续求值变量 someUndeclaredVariable。但是由于 someUndeclaredVariable 没有定义，不能对它应用逻辑与操作符，因此就报错了。假如变量 found 的值是 false，那么就不会报错了：
+
+```js
+let found = false;
+let result = (found && someUndeclaredVariable); // 不会出错
+console.log(result); // 会执行
+```
+
+**3. 逻辑或**  
+逻辑或操作符由两个管道符（||）表示，如下所示：
+```js
+let result = true || false;
+```
+逻辑或操作符遵循如下真值表：
+
+| 第一个操作数 | 第二个操作数 | 结 果 |
+|  ----  | ----  | ----  |
+| true  | true | true |
+| true  | false | true |
+| false | true | true |
+| false | false | false |
+
+同样与逻辑与类似，逻辑或操作符也具有短路的特性。只不过对逻辑或而言，第一个操作数求值为true，第二个操作数就不会再被求值了。看下面的例子：
+```js
+let found = true;
+let result = (found || someUndeclaredVariable); // 不会出错
+console.log(result); // 会执行
+```
+跟前面的例子一样，变量 someUndeclaredVariable 也没有定义。但是，因为变量 found 的值为 true，所以逻辑或操作符不会对变量 someUndeclaredVariable 求值，而直接返回 true。假如把found 的值改为 false，那就会报错了：
+```js
+let found = false;
+let result = (found || someUndeclaredVariable); // 这里会出错
+console.log(result); // 不会执行这一行
+```
+利用这个行为，可以避免给变量赋值 null 或 undefined。比如：
+```js
+let myObject = preferredObject || backupObject; 
+```
+在这个例子中，变量 myObject 会被赋予两个值中的一个。其中，preferredObject 变量包含首选的值，backupObject 变量包含备用的值。如果 preferredObject 不是 null，则它的值就会赋给myObject；如果 preferredObject 是 null，则 backupObject 的值就会赋给 myObject。这种模式在 ECMAScript 代码中经常用于变量赋值
+
+
+**4. 逻辑与与逻辑或的短路**  
+
+![shortout](assets/rl.JPG)
+
+`有5个值是当false来看的`:  
+- false  
+- 数字0  
+- ''  
+- undefined  
+- null
+
+---
+
+### 相等操作符
+判断两个变量是否相等是编程中最重要的操作之一。在比较字符串、数值和布尔值是否相等时，过程都很直观。但是在比较两个对象是否相等时，情形就比较复杂了。ECMAScript 中的相等和不相等操作符，原本在比较之前会执行类型转换，但很快就有人质疑这种转换是否应该发生。最终，ECMAScript提供了两组操作符。第一组是等于和不等于，它们在比较之前执行转换。第二组是全等和不全等，它们在比较之前不执行转换。
+
+**1. 等于和不等于**  
+ECMAScript 中的等于操作符用两个等于号（==）表示，如果操作数相等，则会返回 true。不等于操作符用叹号和等于号（!=）表示，如果两个操作数不相等，则会返回 true。这两个操作符都会先进行类型转换（通常称为`强制类型转换`）再确定操作数是否相等
+
+下表总结了一些特殊情况及比较的结果。
+
+| 表 达 式 | 结 果 |
+|  ----  | ----  |
+| null == undefined  | true |
+| "NaN" == NaN  | false |
+| 5 == NaN  | false |
+| NaN == NaN  | false |
+| NaN != NaN  | true |
+| false == 0  | true |
+| true == 1  | true |
+| true == 2  | false |
+| undefined == 0  | false |
+| null == 0  | false |
+| "5" == 5  | true |
+
+**2. 全等和不全等**  
+
+全等和不全等操作符与相等和不相等操作符类似，只不过它们在比较相等时不转换操作数。全等操作符由 3 个等于号（===）表示，只有两个操作数在不转换的前提下相等才返回 true，比如：
+
+```js
+let result1 = ("55" == 55); // true，转换后相等
+let result2 = ("55" === 55); // false，不相等，因为数据类型不同
+```
+
+虽然 null == undefined 是 true（因为这两个值类似），但 null === undefined 是false，因为它们不是相同的数据类型。
