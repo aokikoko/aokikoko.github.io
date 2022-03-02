@@ -176,3 +176,52 @@ var sum = function(num1, num2) {
 ```
 
 除了函数什么时候真正有定义这个区别之外，这两种语法是等价的。
+
+## 函数内部
+
+在 ECMAScript 5 中，函数内部存在两个特殊的对象：arguments 和 this。ECMAScript 6 又新增 new.target 属性。
+
+### arguments
+
+arguments 对象它是一个类数组对象，包含调用函数时传入的所有参数。这个对象只有以 function 关键字定义函数（相对于使用箭头语法创建函数）时才会有。虽然主要用于包含函数参数，但 arguments 对象其实还有一个 callee 属性，是一个指向 arguments 对象所在函数的指针。来看下面这个经典的阶乘函数：
+
+```js
+function factorial(num) {
+ if (num <= 1) {
+ return 1;
+ } else {
+ return num * factorial(num - 1);
+ }
+} 
+```
+
+阶乘函数一般定义成递归调用的，就像上面这个例子一样。只要给函数一个名称，而且这个名称不会变，这样定义就没有问题。但是，这个函数要正确执行就必须保证函数名是 factorial，从而导致了紧密耦合。使用 arguments.callee 就可以让函数逻辑与函数名解耦：
+
+```js
+function factorial(num) {
+ if (num <= 1) {
+ return 1;
+ } else {
+ return num * arguments.callee(num - 1);
+ }
+} 
+```
+
+这个重写之后的 factorial()函数已经用 arguments.callee 代替了之前硬编码的 factorial。这意味着无论函数叫什么名称，都可以引用正确的函数。考虑下面的情况：
+
+```js
+let trueFactorial = factorial;
+factorial = function() {
+ return 0;
+};
+console.log(trueFactorial(5)); // 120
+console.log(factorial(5)); // 0
+```
+
+这里，trueFactorial 变量被赋值为 factorial，实际上把同一个函数的指针又保存到了另一个位置。然后，factorial 函数又被重写为一个返回 0 的函数。如果像 factorial()最初的版本那样不使用 arguments.callee，那么像上面这样调用 trueFactorial()就会返回 0。不过，通过将函数与名称解耦，trueFactorial()就可以正确计算阶乘，而 factorial()则只能返回 0。
+
+### this
+
+一个特殊的对象是 this，它在标准函数和箭头函数中有不同的行为。
+
+在标准函数中，this 引用的是把函数当成方法调用的上下文对象，这时候通常称其为 this 值（在网页的全局上下文中调用函数时，this 指向 windows）。来看下面的例子：
