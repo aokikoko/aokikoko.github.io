@@ -1,6 +1,6 @@
 ---
 title: "[JS] 模块模式(ES6出现的模块化)"
-sidebar_position: 11
+sidebar_position: 21
 ---
 
 `摘记<Javascript高级程序设计> -- 马特 2020版 第26章`
