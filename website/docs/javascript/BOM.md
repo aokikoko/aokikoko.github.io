@@ -259,3 +259,313 @@ let incrementNumber = function() {
 }
 intervalId = setInterval(incrementNumber, 500);
 ```
+
+在这个例子中，变量 num 会每半秒递增一次，直至达到最大限制值。此时循环定时会被取消。这个模式也可以使用 setTimeout()来实现，比如：
+
+```js
+let num = 0;
+let max = 10;
+let incrementNumber = function() {
+ num++;
+ // 如果还没有达到最大值，再设置一个超时任务
+ if (num < max) {
+ setTimeout(incrementNumber, 500);
+ } else {
+ alert("Done");
+ }
+} 
+```
+
+注意在使用 setTimeout()时，不一定要记录超时 ID，因为它会在条件满足时自动停止，否则会自动设置另一个超时任务。这个模式是设置循环任务的推荐做法。setIntervale()在实践中很少会在生产环境下使用，因为一个任务结束和下一个任务开始之间的时间间隔是无法保证的，有些循环定时任务可能会因此而被跳过。而像前面这个例子中一样使用 setTimeout()则能确保不会出现这种情况。一般来说，最好不要使用 setInterval()。
+
+---
+
+## location 对象
+
+location 是最有用的 BOM 对象之一，提供了当前窗口中加载文档的信息，以及通常的导航功能。这个对象独特的地方在于，它既是 window 的属性，也是 document 的属性。也就是说，window.location 和 document.location 指向同一个对象。location 对象不仅保存着当前加载文档的信息，也保存着把 URL 解析为离散片段后能够通过属性访问的信息。这些解析后的属性在下表中有详细说明（location 前缀是必需的）。
+
+假设浏览器当前加载的 URL 是 `http://foouser:barpassword@www.wrox.com:80/WileyCDA/?q=javascript#contents`，location 对象的内容如下表所示。
+
+![location](assets/location.JPG)
+
+### 查询字符串
+
+location 的多数信息都可以通过上面的属性获取。但是 URL 中的查询字符串并不容易使用。虽然location.search 返回了从问号开始直到 URL 末尾的所有内容，但没有办法逐个访问每个查询参数。下面的函数解析了查询字符串，并返回一个以每个查询参数为属性的对象：
+
+```js
+let getQueryStringArgs = function() {
+ // 取得没有开头问号的查询字符串
+ let qs = (location.search.length > 0 ? location.search.substring(1) : ""),
+  // 保存数据的对象
+  args = {};
+
+ // 把每个参数添加到 args 对象
+ for (let item of qs.split("&").map(kv => kv.split("="))) {
+  let name = decodeURIComponent(item[0]),
+    value = decodeURIComponent(item[1]);
+  if (name.length) {
+    args[name] = value;
+  }
+ } 
+  return args;
+} 
+```
+
+这个函数首先删除了查询字符串开头的问号，当然前提是 location.search 必须有内容。解析后的参数将被保存到 args 对象，这个对象以字面量形式创建。接着，先把查询字符串按照&分割成数组，每个元素的形式为 name=value。for 循环迭代这个数组，将每一个元素按照=分割成数组，这个数组第一项是参数名，第二项是参数值。参数名和参数值在使用 decodeURIComponent()解码后（这是因为查询字符串通常是被编码后的格式）分别保存在 name 和 value 变量中。最后，name 作为属性而 value作为该属性的值被添加到 args 对象。这个函数可以像下面这样使用：
+
+```js
+// 假设查询字符串为?q=javascript&num=10
+let args = getQueryStringArgs();
+alert(args["q"]); // "javascript"
+alert(args["num"]); // "10" 
+```
+
+现在，查询字符串中的每个参数都是返回对象的一个属性，这样使用起来就方便了。  
+
+### URLSearchParams
+
+URLSearchParams 提供了一组标准 API 方法，通过它们可以检查和修改查询字符串。给URLSearchParams 构造函数传入一个查询字符串，就可以创建一个实例。这个实例上暴露了 get()、set()和 delete()等方法，可以对查询字符串执行相应操作。下面来看一个例子：
+
+```js
+let qs = "?q=javascript&num=10";
+let searchParams = new URLSearchParams(qs);
+alert(searchParams.toString()); // " q=javascript&num=10"
+searchParams.has("num"); // true
+searchParams.get("num"); // 10
+searchParams.set("page", "3");
+alert(searchParams.toString()); // " q=javascript&num=10&page=3"
+searchParams.delete("q");
+alert(searchParams.toString()); // " num=10&page=3" 
+```
+
+大多数支持 URLSearchParams 的浏览器也支持将 URLSearchParams 的实例用作可迭代对象：
+
+```js
+let qs = "?q=javascript&num=10";
+let searchParams = new URLSearchParams(qs);
+for (let param of searchParams) {
+ console.log(param);
+}
+// ["q", "javascript"]
+// ["num", "10"]
+```
+
+### 操作地址
+
+可以通过修改 location 对象修改浏览器的地址。首先，最常见的是使用 assign()方法并传入一个 URL，如下所示：
+
+```js
+location.assign("http://www.wrox.com");
+```
+
+这行代码会立即启动导航到新 URL 的操作，同时在浏览器历史记录中增加一条记录。如果给location.href 或 window.location 设置一个 URL，也会以同一个 URL 值调用 assign()方法。比如，下面两行代码都会执行与显式调用 assign()一样的操作：
+
+```js
+window.location = "http://www.wrox.com";
+location.href = "http://www.wrox.com"; 
+```
+
+在这 3 种修改浏览器地址的方法中，设置 location.href 是最常见的。
+
+修改 location 对象的属性也会修改当前加载的页面。其中，hash、search、hostname、pathname和 port 属性被设置为新值之后都会修改当前 URL，如下面的例子所示：
+
+```js
+// 假设当前 URL 为 http://www.wrox.com/WileyCDA/
+// 把 URL 修改为 http://www.wrox.com/WileyCDA/#section1
+location.hash = "#section1";
+// 把 URL 修改为 http://www.wrox.com/WileyCDA/?q=javascript
+location.search = "?q=javascript";
+// 把 URL 修改为 http://www.somewhere.com/WileyCDA/
+location.hostname = "www.somewhere.com";
+// 把 URL 修改为 http://www.somewhere.com/mydir/
+location.pathname = "mydir";
+// 把 URL 修改为 http://www.somewhere.com:8080/WileyCDA/
+location.port = 8080;
+```
+
+除了 hash 之外，只要修改 location 的一个属性，就会导致页面重新加载新 URL。
+
+在以前面提到的方式修改 URL 之后，浏览器历史记录中就会增加相应的记录。当用户单击“后退”按钮时，就会导航到前一个页面。如果不希望增加历史记录，可以使用 replace()方法。这个方法接收一个 URL 参数，但重新加载后不会增加历史记录。调用 replace()之后，用户不能回到前一页。比如下面的例子：
+
+```html
+<!DOCTYPE html>
+<html>
+<head>
+ <title>You won't be able to get back here</title>
+</head>
+<body>
+ <p>Enjoy this page for a second, because you won't be coming back here.</p>
+ <script>
+ setTimeout(() => location.replace("http://www.wrox.com/"), 1000);
+ </script>
+</body>
+</html>
+```
+
+浏览器加载这个页面 1 秒之后会重定向到 www.wrox.com。此时，“后退”按钮是禁用状态，即不能返回这个示例页面，除非手动输入完整的 URL。
+
+最后一个修改地址的方法是 reload()，它能重新加载当前显示的页面。调用 reload()而不传参数，页面会以最有效的方式重新加载。也就是说，如果页面自上次请求以来没有修改过，浏览器可能会从缓存中加载页面。如果想强制从服务器重新加载，可以像下面这样给 reload()传个 true：
+
+```js
+location.reload(); // 重新加载，可能是从缓存加载
+location.reload(true); // 重新加载，从服务器加载
+```
+
+脚本中位于 reload()调用之后的代码可能执行也可能不执行，这取决于网络延迟和系统资源等因素。为此，最好把 reload()作为最后一行代码。
+
+---
+
+## navigator 对象
+
+navigator 是由 Netscape Navigator 2 最早引入浏览器的，现在已经成为客户端标识浏览器的标准。只要浏览器启用 JavaScript，navigator 对象就一定存在。但是与其他 BOM 对象一样，每个浏览器都支持自己的属性。
+
+navigator 对象实现了NavigatorID 、 NavigatorLanguage 、 NavigatorOnLine 、NavigatorContentUtils 、 NavigatorStorage 、 NavigatorStorageUtils 、 NavigatorConcurrentHardware、NavigatorPlugins 和 NavigatorUserMedia 接口定义的属性和方法。下表列出了这些接口定义的属性和方法：
+
+![navigator](assets/navigator.JPG)
+![navigator2](assets/navigator2.JPG)
+
+navigator 对象的属性通常用于确定浏览器的类型。
+
+### 检测插件
+
+检测浏览器是否安装了某个插件是开发中常见的需求。除 IE10 及更低版本外的浏览器，都可以通过 plugins 数组来确定。这个数组中的每一项都包含如下属性。
+
+- name：插件名称。
+- description：插件介绍。
+- filename：插件的文件名。
+- length：由当前插件处理的 MIME 类型数量。
+
+通常，name 属性包含识别插件所需的必要信息，尽管不是特别准确。检测插件就是遍历浏览器中可用的插件，并逐个比较插件的名称，如下所示：
+
+```js
+// 插件检测，IE10 及更低版本无效
+let hasPlugin = function(name) {
+ name = name.toLowerCase(); 
+  for (let plugin of window.navigator.plugins){
+ if (plugin.name.toLowerCase().indexOf(name) > -1){
+ return true;
+ }
+ }
+ return false;
+}
+// 检测 Flash
+alert(hasPlugin("Flash"));
+// 检测 QuickTime
+alert(hasPlugin("QuickTime"));
+```
+
+## screen 对象
+
+window 的另一个属性 screen 对象，是为数不多的几个在编程中很少用的 JavaScript 对象。这个对象中保存的纯粹是客户端能力信息，也就是浏览器窗口外面的客户端显示器的信息，比如像素宽度和像素高度。每个浏览器都会在 screen 对象上暴露不同的属性。下表总结了这些属性。
+
+![screen](assets/screen.JPG)
+
+---
+
+## history 对象
+
+history 对象表示当前窗口首次使用以来用户的导航历史记录。因为 history 是 window 的属性，所以每个 window 都有自己的 history 对象。出于安全考虑，这个对象不会暴露用户访问过的 URL，但可以通过它在不知道实际 URL 的情况下前进和后退。
+
+### 导航
+
+go()方法可以在用户历史记录中沿任何方向导航，可以前进也可以后退。这个方法只接收一个参数，这个参数可以是一个整数，表示前进或后退多少步。负值表示在历史记录中后退（类似点击浏览器的“后退”按钮），而正值表示在历史记录中前进（类似点击浏览器的“前进”按钮）。下面来看几个例子
+
+```js
+// 后退一页
+history.go(-1);
+// 前进一页
+history.go(1);
+// 前进两页
+history.go(2);
+```
+
+在旧版本的一些浏览器中，go()方法的参数也可以是一个字符串，这种情况下浏览器会导航到历史中包含该字符串的第一个位置。最接近的位置可能涉及后退，也可能涉及前进。如果历史记录中没有匹配的项，则这个方法什么也不做，如下所示：
+
+```js
+// 导航到最近的 wrox.com 页面
+history.go("wrox.com");
+// 导航到最近的 nczonline.net 页面
+history.go("nczonline.net"); 
+```
+
+go()有两个简写方法：back()和 forward()。顾名思义，这两个方法模拟了浏览器的后退按钮和前进按钮：
+
+```js
+// 后退一页
+history.back();
+// 前进一页
+history.forward(); 
+```
+
+history 对象还有一个 length 属性，表示历史记录中有多个条目。这个属性反映了历史记录的数量，包括可以前进和后退的页面。对于窗口或标签页中加载的第一个页面，history.length 等于 1。通过以下方法测试这个值，可以确定用户浏览器的起点是不是你的页面：
+
+```js
+if (history.length == 1){
+ // 这是用户窗口中的第一个页面
+} 
+```
+
+:::tip
+注意 如果页面 URL 发生变化，则会在历史记录中生成一个新条目。对于 2009 年以来发
+布的主流浏览器，这包括改变 URL 的散列值（因此，把 location.hash 设置为一个新
+值会在这些浏览器的历史记录中增加一条记录）。这个行为常被单页应用程序框架用来模
+拟前进和后退，这样做是为了不会因导航而触发页面刷新。
+:::
+
+### 历史状态管理
+
+现代 Web 应用程序开发中最难的环节之一就是历史记录管理。用户每次点击都会触发页面刷新的时代早已过去，“后退”和“前进”按钮对用户来说就代表“帮我切换一个状态”的历史也就随之结束了。为解决这个问题，首先出现的是 hashchange 事件。HTML5 也为history 对象增加了方便的状态管理特性
+
+hashchange 会在页面 URL 的散列变化时被触发，开发者可以在此时执行某些操作。而状态管理API 则可以让开发者改变浏览器 URL 而不会加载新页面。为此，可以使用 history.pushState()方法。这个方法接收 3 个参数：
+
+- 一个 state 对象
+- 一个新状态的标题
+- 一个（可选的）相对 URL。
+
+例如：
+
+```js
+let stateObject = {foo:"bar"};
+history.pushState(stateObject, "My title", "baz.html"); 
+```
+
+pushState()方法执行后，状态信息就会被推到历史记录中，浏览器地址栏也会改变以反映新的相对 URL。除了这些变化之外，即使 location.href 返回的是地址栏中的内容，浏览器页不会向服务器发送请求。第二个参数并未被当前实现所使用，因此既可以传一个空字符串也可以传一个短标题。第一个参数应该包含正确初始化页面状态所必需的信息。为防止滥用，这个状态的对象大小是有限制的，通常在 500KB～1MB 以内。
+
+因为 pushState()会创建新的历史记录，所以也会相应地启用“后退”按钮。此时单击“后退”按钮，就会触发 window 对象上的 popstate 事件。popstate 事件的事件对象有一个 state 属性，其中包含通过 pushState()第一个参数传入的 state 对象：
+
+```js
+window.addEventListener("popstate", (event) => {
+ let state = event.state;
+ if (state) { // 第一个页面加载时状态是 null
+ processState(state);
+ }
+}); 
+```
+
+基于这个状态，应该把页面重置为状态对象所表示的状态（因为浏览器不会自动为你做这些）。记住，页面初次加载时没有状态。因此点击“后退”按钮直到返回最初页面时，event.state 会为 null。
+
+可以通过 history.state 获取当前的状态对象，也可以使用 replaceState()并传入与pushState()同样的前两个参数来更新状态。更新状态不会创建新历史记录，只会覆盖当前状态：
+
+```js
+history.replaceState({newFoo: "newBar"}, "New title");
+```
+
+传给 pushState()和 replaceState()的 state 对象应该只包含可以被序列化的信息。因此DOM 元素之类并不适合放到状态对象里保存。
+
+:::tip
+注意 使用 HTML5 状态管理时，要确保通过 pushState()创建的每个“假”URL 背后
+都对应着服务器上一个真实的物理 URL。否则，单击“刷新”按钮会导致 404 错误。所有
+单页应用程序（SPA，Single Page Application）框架都必须通过服务器或客户端的某些配
+置解决这个问题。
+:::
+
+## 小结
+
+浏览器对象模型（BOM，Browser Object Model）是以 window 对象为基础的，这个对象代表了浏览器窗口和页面可见的区域。window 对象也被复用为 ECMAScript 的 Global 对象，因此所有全局变量和函数都是它的属性，而且所有原生类型的构造函数和普通函数也都从一开始就存在于这个对象之上。本章讨论了 BOM 的以下内容。
+
+- 要引用其他 window 对象，可以使用几个不同的窗口指针。
+- 通过 location 对象可以以编程方式操纵浏览器的导航系统。通过设置这个对象上的属性，可以改变浏览器 URL 中的某一部分或全部。
+- 使用 replace()方法可以替换浏览器历史记录中当前显示的页面，并导航到新 URL。
+- navigator 对象提供关于浏览器的信息。提供的信息类型取决于浏览器，不过有些属性如userAgent 是所有浏览器都支持的。
+
+BOM 中的另外两个对象也提供了一些功能。screen 对象中保存着客户端显示器的信息。这些信息通常用于评估浏览网站的设备信息。history 对象提供了操纵浏览器历史记录的能力，开发者可以确定历史记录中包含多少个条目，并以编程方式实现在历史记录中导航，而且也可以修改历史记录。
