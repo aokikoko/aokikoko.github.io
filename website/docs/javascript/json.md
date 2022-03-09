@@ -279,3 +279,40 @@ let jsonText = JSON.stringify(book, null, 4);
 注意，除了缩进，JSON.stringify()方法还为方便阅读插入了换行符。这个行为对于所有有效的缩进参数都会发生。（只缩进不换行也没什么用。）最大缩进值为 10，大于 10 的值会自动设置为 10。
 
 如果缩进参数是一个字符串而非数值，那么 JSON 字符串中就会使用这个字符串而不是空格来缩进。使用字符串，也可以将缩进字符设置为 Tab 或任意字符，如两个连字符：
+
+```js
+let jsonText = JSON.stringify(book, null, "--" );
+// 这样，jsonText 的值会变成如下格式：
+{
+--"title": "Professional JavaScript",
+--"authors": [
+----"Nicholas C. Zakas",
+----"Matt Frisbie"
+--],
+--"edition": 4,
+--"year": 2017
+} 
+
+```
+
+**3. toJSON()方法**
+
+有时候，对象需要在 JSON.stringify()之上自定义 JSON 序列化。此时，可以在要序列化的对象中添加 toJSON()方法，序列化时会基于这个方法返回适当的 JSON 表示。事实上，原生 Date 对象就有一个 toJSON()方法，能够自动将 JavaScript 的 Date 对象转换为 ISO 8601 日期字符串（本质上与在Date 对象上调用 toISOString()方法一样）。
+
+下面的对象为自定义序列化而添加了一个 toJSON()方法：
+
+```js
+let book = {
+ title: "Professional JavaScript",
+ authors: [
+ "Nicholas C. Zakas",
+ "Matt Frisbie"
+ ],
+ edition: 4,
+ year: 2017,
+ toJSON: function() {
+ return this.title;
+ }
+};
+let jsonText = JSON.stringify(book);
+```
