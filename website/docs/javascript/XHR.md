@@ -616,3 +616,312 @@ fetch('/bar')
  console.log(response.statusText); // OK
  });
 ```
+
+请求不存在的资源通常会产生值为 404 的状态码：
+
+```js
+fetch('/does-not-exist')
+ .then((response) => {
+ console.log(response.status); // 404
+ console.log(response.statusText); // Not Found
+ }); 
+```
+
+请求的 URL 如果抛出服务器错误会产生值为 500 的状态码
+
+可以显式地设置 fetch()在遇到重定向时的行为（本章后面会介绍），不过默认行为是跟随重定向并返回状态码不是 300~399 的响应。跟随重定向时，响应对象的 redirected 属性会被设置为 true，而状态码仍然是 200：
+
+```js
+fetch('/permanent-redirect')
+ .then((response) => {
+ // 默认行为是跟随重定向直到最终 URL
+ // 这个例子会出现至少两轮网络请求
+ // <origin url>/permanent-redirect -> <redirect url>
+ console.log(response.status); // 200
+ console.log(response.statusText); // OK
+ console.log(response.redirected); // true
+ });
+```
+
+在前面这几个例子中，虽然请求可能失败（如状态码为 500），但都只执行了期约的解决处理函数。事实上，只要服务器返回了响应，fetch()期约都会解决。这个行为是合理的：系统级网络协议已经成功完成消息的一次往返传输。至于真正的“成功”请求，则需要在处理响应时再定义。
+
+通常状态码为 200 时就会被认为成功了，其他情况可以被认为未成功。为区分这两种情况，可以在状态码非 200~299 时检查 Response 对象的 ok 属性：
+
+```js
+fetch('/bar')
+ .then((response) => {
+ console.log(response.status); // 200
+ console.log(response.ok); // true
+ });
+fetch('/does-not-exist')
+ .then((response) => {
+ console.log(response.status); // 404
+ console.log(response.ok); // false
+ });
+```
+
+因为服务器没有响应而导致浏览器超时，这样真正的 fetch()失败会导致期约被拒绝：
+
+```js
+fetch('/hangs-forever')
+ .then((response) => {
+ console.log(response);
+ }, (err) => {
+    console.log(err);
+ });
+//（浏览器超时后）
+// TypeError: "NetworkError when attempting to fetch resource."
+```
+
+**4. 自定义选项**
+
+只使用 URL 时，fetch()会发送 GET 请求，只包含最低限度的请求头。要进一步配置如何发送请求，需要传入可选的第二个参数 init 对象。init 对象要按照下表中的键/值进行填充。
+
+![xhr](assets/xhrbody.JPG)
+![xhr2](assets/xhrbody2.JPG)
+![xhr3](assets/xhrbody3.JPG)
+![xhr4](assets/xhrbody4.JPG)
+![xhr5](assets/xhrbody5.JPG)
+![xhr6](assets/xhrbody6.JPG)
+
+### 常见 Fetch 请求模式
+
+与 XMLHttpRequest 一样，fetch()既可以发送数据也可以接收数据。使用 init 对象参数，可以配置 fetch()在请求体中发送各种序列化的数据。
+
+**1. 发送 JSON 数据**
+
+```js
+// 可以像下面这样发送简单 JSON 字符串：
+let payload = JSON.stringify({
+ foo: 'bar'
+});
+let jsonHeaders = new Headers({
+ 'Content-Type': 'application/json'
+});
+fetch('/send-me-json', {
+ method: 'POST', // 发送请求体时必须使用一种 HTTP 方法
+ body: payload,
+ headers: jsonHeaders
+}); 
+```
+
+**2. 在请求体中发送参数**
+
+```js
+// 因为请求体支持任意字符串值，所以可以通过它发送请求参数：
+let payload = 'foo=bar&baz=qux';
+let paramHeaders = new Headers({
+ 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'
+}); 
+fetch('/send-me-params', {
+ method: 'POST', // 发送请求体时必须使用一种 HTTP 方法
+ body: payload,
+ headers: paramHeaders
+}); 
+```
+
+**3. 发送文件**
+
+```js
+// 因为请求体支持 FormData 实现，所以 fetch()也可以序列化并发送文件字段中的文件：
+let imageFormData = new FormData();
+let imageInput = document.querySelector("input[type='file']");
+imageFormData.append('image', imageInput.files[0]);
+fetch('/img-upload', {
+ method: 'POST',
+ body: imageFormData
+});
+
+// 这个 fetch()实现可以支持多个文件：
+let imageFormData = new FormData();
+let imageInput = document.querySelector("input[type='file'][multiple]");
+for (let i = 0; i < imageInput.files.length; ++i) {
+ imageFormData.append('image', imageInput.files[i]);
+}
+fetch('/img-upload', {
+ method: 'POST',
+ body: imageFormData
+}); 
+```
+
+**4. 加载 Blob 文件**
+
+略
+
+**5. 发送跨源请求**
+
+从不同的源请求资源，响应要包含 CORS 头部才能保证浏览器收到响应。没有这些头部，跨源请求会失败并抛出错误。
+
+```js
+fetch('//cross-origin.com');
+// TypeError: Failed to fetch
+// No 'Access-Control-Allow-Origin' header is present on the requested resource. 
+```
+
+如果代码不需要访问响应，也可以发送 no-cors 请求。此时响应的 type 属性值为 opaque，因此无法读取响应内容。这种方式适合发送探测请求或者将响应缓存起来供以后使用。
+
+```js
+fetch('//cross-origin.com', { method: 'no-cors' })
+ .then((response) => console.log(response.type));
+// opaque
+```
+
+**6. 中断请求**
+
+略
+
+---
+
+### Headers 对象
+
+Headers 对象是所有外发请求和入站响应头部的容器。每个外发的 Request 实例都包含一个空的Headers 实例，可以通过 Request.prototype.headers 访问，每个入站 Response 实例也可以通过Response.prototype.headers 访问包含着响应头部的 Headers 对象。这两个属性都是可修改属性。另外，使用 new Headers()也可以创建一个新实例。
+
+**1. 头部护卫**
+
+某些情况下，并非所有 HTTP 头部都可以被客户端修改，而 Headers 对象使用护卫来防止不被允许的修改。不同的护卫设置会改变 set()、append()和 delete()的行为。违反护卫限制会抛出TypeError。
+
+### Request 对象
+
+顾名思义，Request 对象是获取资源请求的接口。这个接口暴露了请求的相关信息，也暴露了使用请求体的不同方式。
+
+略
+
+### Response 对象
+
+略
+
+---
+
+## Beacon API
+
+为了把尽量多的页面信息传到服务器，很多分析工具需要在页面生命周期中尽量晚的时候向服务器发送遥测或分析数据。因此，理想的情况下是通过浏览器的 unload 事件发送网络请求。这个事件表示用户要离开当前页面，不会再生成别的有用信息了。
+
+unload 事件触发时，分析工具要停止收集信息并把收集到的数据发给服务器。这时候有一个问题，因为 unload 事件对浏览器意味着没有理由再发送任何结果未知的网络请求（因为页面都要被销毁了）。例如，在 unload 事件处理程序中创建的任何异步请求都会被浏览器取消。为此，异步 XMLHttpRequest或 fetch()不适合这个任务。分析工具可以使用同步 XMLHttpRequest 强制发送请求，但这样做会导致用户体验问题。浏览器会因为要等待 unload 事件处理程序完成而延迟导航到下一个页面。
+
+为解决这个问题，W3C 引入了补充性的 Beacon API。这个 API 给 navigator 对象增加了一个sendBeacon()方法。这个简单的方法接收一个 URL 和一个数据有效载荷参数，并会发送一个 POST请求。可选的数据有效载荷参数有 ArrayBufferView、Blob、DOMString、FormData 实例。如果请求成功进入了最终要发送的任务队列，则这个方法返回 true，否则返回 false。
+
+可以像下面这样使用这个方法：
+
+```js
+// 发送 POST 请求
+// URL: 'https://example.com/analytics-reporting-url'
+// 请求负载：'{foo: "bar"}'
+navigator.sendBeacon('https://example.com/analytics-reporting-url', '{foo: "bar"}');
+```
+
+这个方法虽然看起来只不过是 POST 请求的一个语法糖，但它有几个重要的特性。
+
+- sendBeacon()并不是只能在页面生命周期末尾使用，而是任何时候都可以使用。
+- 调用 sendBeacon()后，浏览器会把请求添加到一个内部的请求队列。浏览器会主动地发送队列中的请求。
+- 浏览器保证在原始页面已经关闭的情况下也会发送请求。
+- 状态码、超时和其他网络原因造成的失败完全是不透明的，不能通过编程方式处理。
+- 信标（beacon）请求会携带调用 sendBeacon()时所有相关的 cookie。
+
+## Web Socket
+
+Web Socket（套接字）的目标是通过一个长时连接实现与服务器全双工、双向的通信。在 JavaScript中创建 Web Socket 时，一个 HTTP 请求会发送到服务器以初始化连接。服务器响应后，连接使用 HTTP Upgrade 头部从 HTTP 协议切换到 Web Socket 协议。这意味着 Web Socket 不能通过标准 HTTP 服务器实现，而必须使用支持该协议的专有服务器。
+
+因为 Web Socket使用了自定义协议，所以 URL方案（scheme）稍有变化：不能再使用 http://或 https://，而要使用 ws://和 wss://。前者是不安全的连接，后者是安全连接。在指定 Web Socket URL 时，必须包含 URL 方案，因为将来有可能再支持其他方案。
+
+使用自定义协议而非 HTTP 协议的好处是，客户端与服务器之间可以发送非常少的数据，不会对HTTP 造成任何负担。使用更小的数据包让 Web Socket 非常适合带宽和延迟问题比较明显的移动应用。使用自定义协议的缺点是，定义协议的时间比定义 JavaScript API 要长。Web Socket 得到了所有主流浏览器支持。
+
+### API 
+
+要创建一个新的 Web Socket，就要实例化一个 WebSocket 对象并传入提供连接的 URL：
+
+```js
+let socket = new WebSocket("ws://www.example.com/server.php");
+```
+
+注意，必须给 WebSocket 构造函数传入一个绝对 URL。同源策略不适用于 Web Socket，因此可以打开到任意站点的连接。至于是否与来自特定源的页面通信，则完全取决于服务器。（在握手阶段就可以确定请求来自哪里。）
+
+浏览器会在初始化 WebSocket 对象之后立即创建连接。与 XHR 类似，WebSocket 也有一个readyState 属性表示当前状态。不过，这个值与 XHR 中相应的值不一样。
+
+- WebSocket.OPENING（0）：连接正在建立。
+- WebSocket.OPEN（1）：连接已经建立。
+- WebSocket.CLOSING（2）：连接正在关闭。
+- WebSocket.CLOSE（3）：连接已经关闭。
+
+WebSocket 对象没有 readystatechange 事件，而是有与上述不同状态对应的其他事件。readyState 值从 0 开始。
+
+任何时候都可以调用 close()方法关闭 Web Socket 连接：
+
+```js
+socket.close();
+```
+
+调用 close()之后，readyState 立即变为 2（连接正在关闭），并会在关闭后变为 3（连接已经关闭）。
+
+### 发送和接收数据
+
+打开 Web Socket 之后，可以通过连接发送和接收数据。要向服务器发送数据，使用 send()方法并传入一个字符串、ArrayBuffer 或 Blob，如下所示：
+
+```js
+let socket = new WebSocket("ws://www.example.com/server.php");
+let stringData = "Hello world!";
+let arrayBufferData = Uint8Array.from(['f', 'o', 'o']);
+let blobData = new Blob(['f', 'o', 'o']);
+socket.send(stringData);
+socket.send(arrayBufferData.buffer);
+socket.send(blobData);
+```
+
+服务器向客户端发送消息时，WebSocket 对象上会触发 message 事件。这个 message 事件与其他消息协议类似，可以通过 event.data 属性访问到有效载荷：
+
+```js
+socket.onmessage = function(event) {
+ let data = event.data;
+ // 对数据执行某些操作
+};
+```
+
+与通过 send()方法发送的数据类似，event.data 返回的数据也可能是 ArrayBuffer 或 Blob。这由 WebSocket 对象的 binaryType 属性决定，该属性可能是"blob"或"arraybuffer"。
+
+### 其他事件
+
+WebSocket 对象在连接生命周期中有可能触发 3 个其他事件。
+
+- open：在连接成功建立时触发。
+- error：在发生错误时触发。连接无法存续。
+- close：在连接关闭时触发。
+
+WebSocket 对象不支持 DOM Level 2 事件监听器，因此需要使用 DOM Level 0 风格的事件处理程序来监听这些事件
+
+---
+
+## 安全
+
+大规模 Ajax 应用程序需要考虑的安全问题非常多，但在通用层面上一般需要考虑以下几个问题。
+
+首先，任何 Ajax 可以访问的 URL，也可以通过浏览器或服务器访问，例如下面这个 URL：
+
+```
+/getuserinfo.php?id=23 
+```
+
+请求这个 URL，可以假定返回 ID 为 23 的用户信息。访问者可以将 23 改为 24 或 56，甚至其他任何值。getuserinfo.php 文件必须知道访问者是否拥有访问相应数据的权限。否则，服务器就会大门敞开，泄露所有用户的信息。
+
+在未授权系统可以访问某个资源时，可以将其视为跨站点请求伪造（CSRF，cross-site request forgery）攻击。未授权系统会按照处理请求的服务器的要求伪装自己。Ajax 应用程序，无论大小，都会受到 CSRF攻击的影响，包括无害的漏洞验证攻击和恶意的数据盗窃或数据破坏攻击。
+
+关于安全防护 Ajax 相关 URL 的一般理论认为，需要验证请求发送者拥有对资源的访问权限。可以通过如下方式实现。
+
+- 要求通过 SSL 访问能够被 Ajax 访问的资源。
+- 要求每个请求都发送一个按约定算法计算好的令牌（token）。
+
+注意，以下手段对防护 CSRF 攻击是无效的。
+- 要求 POST 而非 GET 请求（很容易修改请求方法）。
+- 使用来源 URL 验证来源（来源 URL 很容易伪造）。
+- 基于 cookie 验证（同样很容易伪造）。
+
+## 小结
+
+Ajax 是无须刷新当前页面即可从服务器获取数据的一个方法，具有如下特点。
+
+- 让 Ajax 迅速流行的中心对象是 XMLHttpRequest（XHR）。
+- 这个对象最早由微软发明，并在 IE5 中作为通过 JavaScript 从服务器获取 XML 数据的一种手段。
+- 之后，Firefox、Safari、Chrome 和 Opera 都复刻了相同的实现。W3C 随后将 XHR 行为写入 Web标准。
+- 虽然不同浏览器的实现有些差异，但 XHR 对象的基本使用在所有浏览器中相对是规范的，因此可以放心地在 Web 应用程序中使用。
+
+XHR 的一个主要限制是同源策略，即通信只能在相同域名、相同端口和相同协议的前提下完成。访问超出这些限制之外的资源会导致安全错误，除非使用了正式的跨域方案。这个方案叫作跨源资源共享（CORS，Cross-Origin Resource Sharing），XHR 对象原生支持 CORS。图片探测和 JSONP 是另外两种跨域通信技术，但没有 CORS 可靠。
+
+Fetch API 是作为对 XHR 对象的一种端到端的替代方案而提出的。这个 API 提供了优秀的基于期约的结构、更直观的接口，以及对 Stream API 的最好支持。Web Socket 是与服务器的全双工、双向通信渠道。与其他方案不同，Web Socket 不使用 HTTP，而使用了自定义协议，目的是更快地发送小数据块。这需要专用的服务器，但速度优势明显。
