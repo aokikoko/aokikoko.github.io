@@ -251,3 +251,88 @@ DNS-MASTER、DNS-SLAVE
 # crontab -e
 */2 * * * * /usr/sbin/ntpdate 10.1.1.100 &>/dev/null
 ```
+
+
+## 6、DNS主从部署
+
+主从部署的核心思路：
+
+```powershell
+1. master和slave的系统时间保持一致
+2. slave服务器上安装相应的软件（系统版本、软件版本保持一致）
+3. 根据需求修改相应的配置文件（master和slave都应该去修改）
+4. 主从同步的核心是slave同步master上的区域文件（zone文件）
+```
+
+> master：主	slave：从
+
+第一步：准备一台slave从服务器(略)
+
+① 克隆 ② 更改主机名称以及IP地址（更改UUID编号、关闭NetworkManager）③ 关闭防火墙与SELinux ④ 配置YUM源
+
+| 编号 | 主机名称        | IP地址    | 备注信息          |
+| ---- | --------------- | --------- | ----------------- |
+| 1    | slave.itcast.cn | 10.1.1.14 | dns slave从服务器 |
+
+第二步：更改主dns服务器，允许其他的从服务器下载同步资源
+
+```powershell
+# vim /etc/named.conf
+12 options {
+13         listen-on port 53 { 127.0.0.1;any; };
+14         listen-on-v6 port 53 { ::1; };
+15         allow-transfer {10.1.1.14; };	=>  允许从服务器的IP地址过来同步资源
+16         directory       "/var/named";
+17         dump-file       "/var/named/data/cache_dump.db";
+18         statistics-file "/var/named/data/named_stats.txt";
+19         memstatistics-file "/var/named/data/named_mem_stats.txt";
+20         recursing-file  "/var/named/data/named.recursing";
+21         secroots-file   "/var/named/data/named.secroots";
+22         allow-query     { localhost;any;};
+
+
+# systemctl restart named
+```
+
+第三步：SLAVE从服务器配置
+
+```powershell
+# yum install bind -y
+
+# vim /etc/named.conf
+12 options {
+13         listen-on port 53 { 127.0.0.1;any; };
+14         listen-on-v6 port 53 { ::1; };
+15         directory       "/var/named";
+16         dump-file       "/var/named/data/cache_dump.db";
+17         statistics-file "/var/named/data/named_stats.txt";
+18         memstatistics-file "/var/named/data/named_mem_stats.txt";
+19         recursing-file  "/var/named/data/named.recursing";
+20         secroots-file   "/var/named/data/named.secroots";
+21         allow-query     { localhost;any; };
+
+# vim /etc/named.rfc1912.zones
+zone "test.net" IN {
+        type slave;
+        file "slaves/test.net";
+        masters { 10.1.1.12; };
+};
+
+zone "heima.cc" IN {
+        type slave;
+        file "slaves/heima.cc";
+        masters { 10.1.1.12; };
+};
+
+# 检测配置文件是否有错（略）
+# named-checkconf ...
+
+# systemctl restart named
+```
+
+第四步：在Client客户端，把Slave从服务器的IP设置为DNS
+
+```powershell
+# echo 'nameserver 10.1.1.14' > /etc/resolv.conf
+# nslookup www.test.net
+```
