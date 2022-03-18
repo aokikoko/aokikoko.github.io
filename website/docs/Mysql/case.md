@@ -1,5 +1,5 @@
 ---
-title: "[Mysql] mysql无损升级"
+title: "[Mysql] mysql无损升级-案例拆解"
 sidebar_position: 1
 ---
 
