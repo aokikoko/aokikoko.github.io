@@ -17,7 +17,7 @@ sidebar_position: 11
 
 ## 负载均衡服务器搭建
 
-![fa3](assets/fa3.jpg)
+![fa3](assets/fa3.JPG)
 
 ### 1、引入负载均衡技术
 
