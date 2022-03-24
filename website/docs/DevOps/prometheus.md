@@ -419,7 +419,7 @@ prometheus 报警需要使用 alertmanager 这个组件，而且报警规则需�
 - 保存配置后，需要由 OK 状态变为 alerting 状态才会报警(也就是说，你配置保存后，就已经是 alerting 状态是不会报警的)
 - grafana 与 onealert 通信有问题
 
-# 课外扩展
+# 扩展
 
 prometheus 目前还在发展中，很多相应的监控都需要开发。但在官网的 dashboard 库中,也有一些官方和社区开发人员开发的 dashboard 可以直接拿来用。
 
