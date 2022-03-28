@@ -151,6 +151,98 @@ TODO
 
 本地网络类型:
 
-- bridge NAT模式, 可使容器连接外网
+- bridge NAT 模式, 可使容器连接外网
 - host 与主机共享网络, 可使容器连接外网
-- none 容器仅有lo网卡, 无法连接外网
+- none 容器仅有 lo 网卡, 无法连接外网
+
+### 1. bridge
+
+所有容器连接到桥，就可以使用外网，使用 NAT 让容器可以访问外网
+
+```shell
+[root@bogon ~]# ip a s
+3: docker0: <NO-CARRIER,BROADCAST,MULTICAST,UP> mtu 1500 qdisc noqueue state DOWN
+group default
+link/ether 02:42:0d:52:fa:0a brd ff:ff:ff:ff:ff:ff
+inet 172.17.0.1/16 brd 172.17.255.255 scope global docker0
+valid_lft forever preferred_lft forever
+inet6 fe80::42:dff:fe52:fa0a/64 scope link
+valid_lft forever preferred_lft forever
+#所有容器连接到此桥，IP地址都是172.17.0.0/16
+#启动docker服务后出现
+[root@bogon ~]# brctl show
+bridge name bridge id STP enabled interfaces
+br-5ca493f64e19 8000.02429cb0e393 no
+docker0 8000.02420d52fa0a no
+[root@bogon ~]# docker network ls
+NETWORK ID NAME DRIVER SCOPE
+93283dec7d39 bridge bridge local
+#使用--network选择完成对容器网络的选择
+[root@bogon ~]# docker run -d --network bridge smartgodocker/centos-nginx:v1
+```
+
+### 2. host
+
+所有的容器与 docker host 在同一网络中，可以让容器访问，甚至可以让外网主机访问容器中的服务
+
+```shell
+[root@bogon ~]# docker network ls
+NETWORK ID NAME DRIVER SCOPE
+51ab732381e8 host host local
+```
+
+使用--network 选择容器运行的网络
+
+```shell
+[root@bogon ~]# docker run -it --network host centos:latest /bin/bash
+[root@bogon /]# ip a s
+bash: ip: command not found
+[root@bogon /]# yum -y install iproute
+#安装完成后，查看IP地址，发现其使用了docker host地址
+#好处在于方便访问
+#坏处在多容器同时运行一种服务，端口冲突
+#仅在测试环境中使用
+```
+
+### 3. none
+
+容器仅与 lo 网卡，不能与外界连接，在高级应用中会使用到
+
+```shell
+[root@bogon ~]# docker network ls
+NETWORK ID NAME DRIVER SCOPE
+93283dec7d39 bridge bridge local
+5ca493f64e19 harbor_harbor bridge local
+51ab732381e8 host host local
+4b7fd7698bec none null local
+[root@bogon ~]# docker run -it --network none centos:latest
+[root@8159e9d168ab /]# ip a s
+#无法验证
+```
+
+## 跨主机容器间网络通信
+
+### 实现跨主机容器间通信的工具
+
+- Pipework
+- Flannel
+- Weave
+- Open V Switch OVS
+- Calico
+
+### Weave 的思路
+
+在每个宿主机上布置一个特殊的 route 的容器, 不同宿主机的 route 容器连接起来. route 拦截所有普通容器的 ip 请求, 并通过 udp 包发送到其他宿主机上的普通容器, 这样在跨机的多个容器端看到的就是同一个扁平网络
+
+| weave 解决了网络问题, 不过部署依然是单机的
+
+### flannel 的思路
+
+- 是 Overlay 网络，即覆盖型网络
+- 通过 etcd 保存子网信息及网络分配信息
+- 给每台 Docker Host 分配置一个网段
+- 通过 UDP 传输数据包
+
+### 后续 TODO
+
+TODO
