@@ -1,5 +1,5 @@
 ---
-title: "[Http] 大话Http"
+title: "[Http] 大话Http(上)"
 sidebar_position: 2
 ---
 
@@ -236,8 +236,63 @@ HTTP/1.1 常用方法
 
 ## 状态码
 
-是用以表示网页服务器超文本传输协议响应状态的3位数字代码
+是用以表示网页服务器超文本传输协议响应状态的 3 位数字代码
 
 ### 常用状态码
 
 ![200](assets/200.JPG)
+
+![300](assets/300.JPG)
+
+![400](assets/400.JPG)
+
+![500](assets/500.JPG)
+
+## 状态机制
+
+### Cookie
+
+cookie 实际上是一小段的文本信息, 客户端请求服务器, 如果服务器需要记录该用户状态, 就向客户端浏览器颁发一个 cookie, 客户端浏览器会把 cookie 保存起来, 当浏览器再请求该网站时, 浏览器把请求的网址连同该 cookie 一同提交给服务器, 服务器检查该 cookie, 以此来辨认用户状态
+
+![cookie](assets/cookie.JPG)
+
+### Session
+
+Session 是另一种记录客户状态的机制, 保存在服务器上, 客户端浏览器访问服务器的时候, 服务器把客户端信息以某种形式记录在服务器上
+
+客户端浏览器再次访问时只需要从该 session 中查找该客户端的状态就可以了
+
+![session](assets/session.JPG)
+
+### 保存 session id 的方式
+
+- cookie
+
+- url 重写
+
+  - 比如: http://../xxx;Sessionid=DFSJKJFKSJJSDFJKJLJL 或作为查询字符串 http://../xxx?Sessionid=DFSJKJFKSJJSDFJKJLJL
+
+- 隐藏表单
+
+### Session 的有效期
+
+- Session 超时失效
+
+- 调用 HttpSession.invalidate()
+
+- 服务器进程被终止
+
+### Cookie 与 session
+
+- 存放位置不同
+
+  - cookie 保存在客户端, session 保存在服务端
+
+- 安全性(隐私策略)不同
+
+  - cookie 保存在浏览器, 客户端可见, 容易被篡改
+  - session 存储在服务器上, 对客户端来说透明, 不会泄露敏感信息
+
+- 有效期不同
+  - cookie 可长时间
+  - session 在服务器端需要定时清理
