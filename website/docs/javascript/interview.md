@@ -187,4 +187,4 @@ console.log(Object.prototype.hasOwnProperty("hasOwnProperty")); // true
 
 而因为它的原型对象也有 `__proto__`，因此这样就串联形成一个链式结构，也就是我们称为的原型链。
 
-![9526](assets/image-20210218212449526.JPG)
+![9526](assets/image-20210218212449526.jpg)
