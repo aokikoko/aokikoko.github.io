@@ -1,6 +1,6 @@
 ---
 title: "[JS] interview"
-sidebar_position: 99
+sidebar_position: 166
 ---
 
 ## 1. 谈谈对作用域链的理解
