@@ -188,3 +188,62 @@ console.log(Object.prototype.hasOwnProperty("hasOwnProperty")); // true
 而因为它的原型对象也有 `__proto__`，因此这样就串联形成一个链式结构，也就是我们称为的原型链。
 
 ![9526](assets/image-20210218212449526.jpg)
+
+## 5. 谈谈继承的理解
+
+**为什么要学习继承 ?**
+
+写的构造函数, 定义了一个类型 (人类), 万一项目非常大, 又有了细化的多个类型 (老师, 工人, 学生)
+
+学习继承, 可以让多个构造函数之间建立关联, 便于管理和复用
+
+**什么是继承 ?**
+
+继承: 从别人那里, 继承东西过来 (财产, 房产)
+
+代码层面的继承: 继承一些属性和方法
+
+分析需求:
+
+​ 人类, 属性: name, age
+
+​ 学生, 属性: name, age, className
+
+​ 工人, 属性: name, age, companyName
+
+无论学生, 还是工人, => 都是人类, 所以人类原型上有的方法, 他们都应该要有
+
+```js
+// 1. 定义Person构造函数
+function Person(name, age) {
+  this.name = name;
+  this.age = age;
+}
+Person.prototype.say = function () {
+  console.log("人类会说话");
+};
+
+// 2. 定义Student构造函数
+function Student(name, age, className) {
+  this.name = name;
+  this.age = age;
+  this.className = className;
+}
+// 3. 原型继承: 利用原型链, 继承于父级构造函数, 继承原型上的方法
+// 语法: 子构造函数.prototype = new 父构造函数()
+Student.prototype = new Person();
+Student.prototype.study = function () {
+  console.log("学生在学习");
+};
+
+let stu = new Student("张三", 18, "80期");
+stu.say();
+console.log(stu);
+```
+
+![20210306111112493](assets/image-20210306111112493.png)
+
+### Todo..
+
+## 如何判断是否是数组
+
