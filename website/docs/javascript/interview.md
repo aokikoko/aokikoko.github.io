@@ -203,6 +203,10 @@ console.log(Object.prototype.hasOwnProperty("hasOwnProperty")); // true
 
 代码层面的继承: 继承一些属性和方法
 
+### 继承 - 原型继承
+
+原型继承: 通过改造原型链, 利用原型链的语法, 实现继承方法!
+
 分析需求:
 
 ​ 人类, 属性: name, age
@@ -243,7 +247,155 @@ console.log(stu);
 
 ![20210306111112493](assets/image-20210306111112493.png)
 
-### Todo..
+### 继承 - 组合继承
 
-## 如何判断是否是数组
+组合继承有时候也叫伪经典继承，指的是将原型链 和 借用构造函数 call 技术组合到一块，
 
+从而发挥二者之长的一种继承模式，其背后的思路: **是使用原型链实现对原型属性和方法的继承 (主要是方法)，**
+
+**而通过借用构造函数来实现对实例属性构造的继承**。这样既通过在原型上定义方法实现了函数复用，又能保证每个实例都有它的自己的属性。
+
+```js
+// 1. 定义Person构造函数
+function Person(name, age) {
+  this.name = name;
+  this.age = age;
+}
+Person.prototype.say = function () {
+  console.log("人类会说话");
+};
+
+// 2. 定义Student构造函数
+function Student(name, age, className) {
+  Person.call(this, name, age); // 实现构造属性的继承
+  this.className = className;
+}
+
+// 3. 原型继承: 利用原型链, 继承于父级构造函数, 继承原型上的方法
+// 语法: 子构造函数.prototype = new 父构造函数()
+Student.prototype = new Person();
+Student.prototype.study = function () {
+  console.log("学生在学习");
+};
+
+let stu = new Student("张三", 18, "80期");
+stu.say();
+console.log(stu);
+
+// 方法通过 原型继承
+// 属性通过 父构造函数的.call(this, name, age)
+```
+
+### 继承 - 寄生组合继承
+
+student 实例上有 name age, 而原型 `__proto__`上不需要再有这些属性, 所以利用 Object.create 改装下
+
+Object.create(参数对象),
+
+1. Object.create 会创建一个新对象,
+2. 并且这个新对象的`__proto__` 会指向传入的参数对象
+
+```js
+// 1. 定义Person构造函数
+function Person(name, age) {
+  this.name = name;
+  this.age = age;
+}
+Person.prototype.say = function () {
+  console.log("人类会说话");
+};
+
+// 2. 定义Student构造函数
+function Student(name, age, className) {
+  Person.call(this, name, age);
+  this.className = className;
+}
+
+// 3. 原型继承: 利用原型链, 继承于父级构造函数, 继承原型上的方法
+// 语法: 子构造函数.prototype = new 父构造函数()
+Student.prototype = Object.create(Person.prototype);
+Student.prototype.study = function () {
+  console.log("学生在学习");
+};
+
+let stu = new Student("张三", 18, "80期");
+stu.say();
+console.log(stu);
+
+// 总结:
+// Object.create() 以参数的对象, 作为新建对象的__proto__属性的值, 返回新建的对象
+```
+
+![image-20210306114638139](assets/image-20210306114638139.png)
+
+### es6 - class 实现继承 extends
+
+```jsx
+// 继承关键字 => extends
+class Person {
+  constructor(name, age) {
+    this.name = name;
+    this.age = age;
+  }
+  jump() {
+    console.log("会跳");
+  }
+}
+
+class Teacher extends Person {
+  constructor(name, age, lesson) {
+    super(name, age); // extends 中, 必须调用 super(), 会触发执行父类的构造函数
+    this.lesson = lesson;
+    console.log("构造函数执行了");
+  }
+  sayHello() {
+    console.log("会打招呼");
+  }
+}
+
+let teacher1 = new Teacher("zs", 18, "体育");
+console.log(teacher1);
+```
+
+## 判断是否是数组
+
+```js
+console.log(typeof []); //object
+```
+
+### 方法一：使用 `toString` 方法
+
+调用的是 Object.prototype.toString 方法
+
+```js
+function isArray(arg) {
+  return Object.prototype.toString.call(arg) === "[object Array]";
+}
+
+let arr = [1, 2, 3];
+isArray(arr); // true
+```
+
+### 方法二：使用 ES6 新增的 `Array.isArray` 方法
+
+Array 构造函数身上的静态方法 isArray
+
+```js
+let arr = [1, 2, 3];
+Array.isArray(arr); // true
+```
+
+## 谈谈对 this 的理解
+
+```js
+// 函数中的this, 要看如何调用的
+function fn() {
+  console.log(this);
+}
+let obj = {
+  name: 'zs';
+}
+obj.fn = fn
+
+obj.fn() // 指向obj
+```
