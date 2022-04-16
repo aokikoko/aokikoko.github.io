@@ -1,6 +1,7 @@
 ---
-title: "[JS] interview"
-sidebar_position: 166
+slug: js
+title: "[面试题] JS"
+sidebar_position: 2
 ---
 
 ## 1. 谈谈对作用域链的理解
@@ -357,7 +358,7 @@ let teacher1 = new Teacher("zs", 18, "体育");
 console.log(teacher1);
 ```
 
-## 判断是否是数组
+## 6. 判断是否是数组
 
 ```js
 console.log(typeof []); //object
@@ -385,7 +386,7 @@ let arr = [1, 2, 3];
 Array.isArray(arr); // true
 ```
 
-## 谈谈对 this 的理解
+## 7. 谈谈对 this 的理解
 
 ```js
 // 函数中的this, 要看如何调用的
@@ -399,3 +400,370 @@ obj.fn = fn
 
 obj.fn() // 指向obj
 ```
+
+`this` 是一个在运行时才进行绑定的引用，在不同的情况下它可能会被绑定不同的对象。
+
+**默认绑定** (指向 window 的情况) (函数调用模式 fn() )
+
+默认情况下，`this` 会被绑定到全局对象上，比如在浏览器环境中就为`window`对象，在 node.js 环境下为`global`对象。
+
+如下代码展示了这种绑定关系：
+
+```js
+message = "Hello";
+
+function test() {
+  console.log(this.message);
+}
+
+test(); // "Hello"
+```
+
+**隐式绑定** (谁调用, this 指向谁) (方法调用模式 obj.fn() )
+
+如果函数的调用是从对象上发起时，则该函数中的 `this` 会被自动隐式绑定为对象：
+
+```js
+function test() {
+  console.log(this.message);
+}
+
+let obj = {
+  message: "hello,world",
+  test: test,
+};
+
+obj.test(); // "hello,world"
+```
+
+**显式绑定** (又叫做硬绑定) (上下文调用模式, 想让 this 指向谁, this 就指向谁)
+
+硬绑定 => call apply bind
+
+可以显式的进行绑定：
+
+```js
+function test() {
+  console.log(this.message);
+}
+
+let obj1 = {
+  message: "你好世界123",
+};
+
+let obj2 = {
+  message: "你好世界456",
+};
+
+test.bind(obj1)(); // "你好世界123"
+test.bind(obj2)(); // "你好世界456"
+```
+
+**new 绑定** (构造函数模式)
+
+另外，在使用 `new` 创建对象时也会进行 `this` 绑定
+
+当使用 `new` 调用构造函数时，会创建一个新的对象并将该对象绑定到构造函数的 `this` 上：
+
+```js
+function Greeting(message) {
+  this.message = message;
+}
+
+var obj = new Greeting("hello,world");
+obj.message; // "hello,world"
+```
+
+小测试:
+
+```jsx
+let obj = {
+  a: {
+    fn: function () {
+      console.log(this);
+    },
+    b: 10,
+  },
+};
+obj.a.fn();
+let temp = obj.a.fn;
+temp();
+
+// -------------------------------------------------------------
+
+function Person(theName, theAge) {
+  this.name = theName;
+  this.age = theAge;
+}
+Person.prototype.sayHello = function () {
+  // 定义函数
+  console.log(this);
+};
+
+let per = new Person("小黑", 18);
+per.sayHello();
+```
+
+### this 指向的情况
+
+1. 函数调用模式 fn() 指向 window(默认绑定)
+2. 方法调用模式 obj.fn() 指向调用者 (隐式绑定, 虽然没有刻意的绑定, 但是执行时, 会自动将函数的 this 指向调用者)
+3. 上下文调用模式 call apply bind 想指向谁就指向谁 (显示绑定, 硬绑定)
+4. 构造函数模式 new Person() 指向创建的实例(new 绑定)
+
+- new 四步:
+- 1. 创建 1 个新对象
+- 2. 让构造函数的 this, 指向新对象
+- 3. 执行构造函数
+- 4. 返回实例
+
+## 8. 箭头函数中的 this 指向什么？
+
+箭头函数不同于传统函数，它其实没有属于⾃⼰的 `this`，
+
+它所谓的 `this` 是, 捕获其外层 上下⽂的 `this` 值作为⾃⼰的 `this` 值。
+
+并且由于箭头函数没有属于⾃⼰的 `this` ，它是不能被 `new` 调⽤的。
+
+我们可以通过 Babel 转换前后的代码来更清晰的理解箭头函数:
+
+```js
+// 转换前的 ES6 代码
+const obj = {
+  test() {
+    return () => {
+      console.log(this === obj);
+    };
+  },
+};
+```
+
+```js
+// 转换后的 ES5 代码
+var obj = {
+  test: function getArrow() {
+    var that = this;
+    return function () {
+      console.log(that === obj);
+    };
+  },
+};
+```
+
+这里我们看到，箭头函数中的 `this` 就是它上层上下文函数中的 `this`。
+
+## 9. Promise 的静态方法
+
+promise 的三个状态: pending(默认) fulfilled(成功) rejected(失败)
+
+1. resolve 函数被执行时, 会将 promise 的状态从 pending 改成 fulfilled 成功
+2. reject 函数被执行时, 会将 promise 的状态从 pending 改成 rejected 失败
+
+### Promise.reject()
+
+Promise.reject()等价于以下代码, 是下面代码的简写
+
+```js
+new Promise((resolve, reject) => {
+  reject();
+});
+```
+
+### Promise.resolve()
+
+Promise.reject()等价于以下代码, 是下面代码的简写
+
+```jsx
+new Promise((resolve, reject) => {
+  resolve();
+});
+```
+
+### Promise.all
+
+**Promise.all([promise1, promise2, promise3])** 等待原则, 是在所有 promise 都完成后执行, 可以用于处理一些`并发的任务`
+
+```jsx
+// 后面的.then中配置的函数, 是在前面的所有promise都完成后执行, 可以用于处理一些并发的任务
+Promise.all([promise1, promise2, promise3]).then((values) => {
+  // values 是一个数组, 会收集前面promise的结果 values[0] => promise1的成功的结果 values[1] => promise2的成功的结果
+});
+// 比如希望同时并发3个请求, 给用户loading效果, 只要网页没加载完, 就显示loading, 只有全部请求都完成, loading关闭
+```
+
+Promise.race([promise1, promise2, promise3]) 赛跑, 竞速原则, 只要三个 promise 中有一个满足条件, 就会执行.then(用的较少)
+
+### Promise.race
+
+## 10. 宏任务 微任务 是什么
+
+js 是单线程的, 如果遇到了异步的内容, 交给浏览器处理(等待, 监听)
+
+宏任务: 主线程代码, setTimeout 等属于宏任务, 上一个宏任务执行完, 才会考虑执行下一个宏任务
+
+微任务: promise .then .catch 的需要执行的内容, 属于微任务, 满足条件的微任务, 会被添加到当前宏任务的最后去执行
+
+![image-20201208040306978](assets/image-20201208040306978.png)
+
+**事件循环队列 eventLoop**
+
+![image-20201208040235602](assets/image-20201208040235602.png)
+
+### 例题
+
+例题 1:
+
+```jsx
+console.log(1);
+
+setTimeout(function () {
+  console.log(2); // 宏任务
+}, 0);
+
+const p = new Promise((resolve, reject) => {
+  resolve(1000);
+});
+p.then((data) => {
+  console.log(data); // 微任务
+});
+
+console.log(3);
+```
+
+![image-20210306151137688](assets/image-20210306151137688.png)
+
+例题 2:
+
+```jsx
+// async 可以用于修饰一个函数, 表示一个函数是异步的
+// async 只有在遇到了await 开始, 才是异步的开始
+// 因为这里没有await 所以仍然是同步函数输出 111 222
+async function fn() {
+  console.log(111);
+}
+fn();
+console.log(222);
+
+// 111 222
+```
+
+例题 3:
+
+```jsx
+// await 下面的内容可以理解为写在.then的内容, .then是异步的, 而且.then相当于微任务, 微任务不会立刻执行, 而是等待主线程代码执行完再执行, 所以222输出后才输出2
+async function fn() {
+  const res = await 2;
+  console.log(res);
+}
+fn();
+console.log(222);
+
+// 222 1
+```
+
+例题 4:
+
+```jsx
+// 注意 await 后面的执行函数 fn2() 也是立刻执行 同步的, 它跟嘿嘿属于宏任务1的内容
+async function fn() {
+  console.log("嘿嘿");
+  const res = await fn2();
+  console.log(res); // 微任务
+}
+async function fn2() {
+  console.log("gaga");
+}
+fn();
+console.log(222);
+
+// 嘿嘿 嘎嘎 22 undefined
+```
+
+![image-20210306152010989](assets/image-20210306152010989.png)
+
+考察点: async 函数只有从 await 往下才是异步的开始
+
+## 11. async/await 是什么？
+
+ES7 标准中新增的 `async` 函数，从目前的内部实现来说其实就是 `Generator` 函数的语法糖。
+
+它基于 Promise，并与所有现存的基于 Promise 的 API 兼容。
+
+**async 关键字**
+
+1. `async` 关键字用于声明⼀个异步函数（如 `async function asyncTask1() {...}`）
+
+2. `async` 会⾃动将常规函数转换成 Promise，返回值也是⼀个 Promise 对象
+
+3. `async` 函数内部可以使⽤ `await`
+
+**await 关键字**
+
+1. `await` 用于等待异步的功能执⾏完毕 `var result = await someAsyncCall()`
+
+2. `await` 放置在 Promise 调⽤之前，会强制 async 函数中其他代码等待，直到 Promise 完成并返回结果
+
+3. `await` 只能与 Promise ⼀起使⽤
+
+4. `await` 只能在 `async` 函数内部使⽤
+
+## 12. 相较于 Promise，async/await 有何优势？
+
+1. 同步化代码的阅读体验（Promise 虽然摆脱了回调地狱，但 then 链式调⽤的阅读负担还是存在的）
+2. 和同步代码更一致的错误处理方式（ async/await 可以⽤成熟的 try/catch 做处理，比 Promise 的错误捕获更简洁直观）
+3. 调试时的阅读性, 也相对更友好
+
+```js
+// 普通的promise捕获错误
+p.then().catch();
+// 存在嵌套的promise捕获错误
+p.then(() => {
+  p.then(() => {}).catch();
+}).catch();
+// 存在嵌套的promise复杂写法
+p.then(() => {
+  return p2;
+}).then(() => {
+  // 这个.then是对上面p2去执行的
+});
+```
+
+## 13. 深拷贝 浅拷贝
+
+引用类型, 进行赋值时, 赋值的是地址
+
+1. 浅拷贝
+
+   ```jsx
+   let obj = {
+     name: "zs",
+     age: 18,
+   };
+   let obj2 = {
+     ...obj,
+   };
+   ```
+
+2. 深拷贝
+
+   ```jsx
+   let obj = {
+     name: "zs",
+     age: 18,
+     car: {
+       brand: "宝马",
+       price: 100,
+     },
+   };
+
+   let obj2 = JSON.parse(JSON.stringify(obj));
+   console.log(obj2);
+   ```
+
+   当然递归也能解决, 只是比较麻烦~
+
+   ...
+
+其他方案, 可以参考一些博客
+
+---
