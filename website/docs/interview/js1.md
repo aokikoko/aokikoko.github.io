@@ -1,6 +1,6 @@
 ---
 slug: js1
-title: "[] JS-基本数据类型"
+title: "[面试题] JS-基本数据类型"
 sidebar_position: 7
 ---
 
