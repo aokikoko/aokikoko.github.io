@@ -119,7 +119,7 @@ Person.prototype.sayName = function () {
 
 **简易图**
 
-![简易prototype](assets\简易prototype.png)
+![jianyiprototype](assets\jianyiprototype.png)
 
 #### constructor 属性
 
