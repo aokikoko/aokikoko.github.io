@@ -97,3 +97,107 @@ var person = {};
 person.__proto__ = Person.prototype;
 Person.call(person);
 ```
+
+### 1.2 原型对象理解
+
+#### 函数对象的 prototype 属性
+
+我们创建的每一个函数都有一个 `prototype` 属性，这个属性是一个指针，指向一个对象。这个对象的用途是包含可以由特定类型的所有实例共享的属性和方法，简单来说，该函数实例化的所有对象的`__proto__`的属性指向这个对象，它是该函数所有实例化对象的原型。
+
+```js
+function Person() {}
+
+// 为原型对象添加方法
+Person.prototype.sayName = function () {
+  alert(this.name);
+};
+```
+
+下面我们来看一下它们之间的关系。
+
+![prototype](assets/prototype.png)
+
+**简易图**
+
+<!-- ![easyprototype](assets\easyprototype.jpg) -->
+
+#### constructor 属性
+
+当函数创建，`prototype `属性指向一个原型对象时，在默认情况下，这个原型对象将会获得一个 constructor 属性，这个属性是一个指针，指向 `prototype` 所在的函数对象。
+
+拿前面的一个例子来说 `Person.prototype.constructor` 就指向 `Person `函数对象。
+
+```js
+console.log(Person.prototype.constructor == Person);
+```
+
+下面我们来更新一下它们之间的关系图。
+
+<!-- ![constructor1](assets\constructor.png) -->
+
+**简易图**
+
+<!-- ![constructor2](assets\constructor.jpg) -->
+
+#### 对象的 `__proto__ `属性
+
+当我们调用构造函数创建一个新实例后，在这个实例的内部将包含一个指针，指向构造函数的原型对象.
+
+根据前面的 `Person` 构造函数我们新建一个实例
+
+```js
+var student = new Person();
+
+console.log(student.__proto__ === Person.prototype); // true
+```
+
+从上面我们可以看出，这个连接是存在与实例与构造函数的原型对象之间的，而不是存在于实例和构造函数之间的。
+
+下面我们来看一下现在这几个对象之间的关系
+
+<!-- ![proto](assets/proto.png) -->
+
+`isPrototypeOf()` 方法用于测试一个对象是否存在于另一个对象的原型链上。
+
+```js
+console.log(Person.prototype.isPrototypeOf(student)); // true
+```
+
+**简易图**
+
+<!-- ![](assets\proto.jpg) -->
+
+### 1.3 原型属性
+
+##### 属性访问
+
+每当代码读取对象的某个属性时，首先会在对象本身搜索这个属性，如果找到该属性就返回该属性的值，如果没有找到，则继续搜索该对象对应的原型对象，以此类推下去。
+
+因为这样的搜索过程，因此我们如果在实例中添加一个属性时，这个属性就会屏蔽原型对象中保存的同名属性，因为在实例中搜索到该属性后就不会再向后搜索了。
+
+##### 属性判断
+
+既然一个属性既可能是实例本身的，也有可能是其原型对象的，那么我们该如何来判断呢？
+
+在属性确认存在的情况下，我们可以使用 `hasOwnProperty() `方法来判断一个属性是存在与实例中，还是存在于原型中
+
+```js
+function Person() {}
+
+Person.prototype.name = "laker";
+
+var student = new Person();
+
+console.log(student.name); // laker
+console.log(student.hasOwnProperty("name")); // false
+
+student.name = "xiaoming";
+console.log(student.name); //xiaoming 屏蔽了原型对象中的 name 属性
+console.log(student.hasOwnProperty("name")); // true
+```
+
+```js
+function hasPrototypeProperty(object, name) {
+  return !object.hasOwnProperty(name) && name in object;
+}
+```
