@@ -133,11 +133,11 @@ console.log(Person.prototype.constructor == Person);
 
 下面我们来更新一下它们之间的关系图。
 
-![constructor1](assets\constructor.png)
+<!-- ![constructor1](assets\constructor.png) -->
 
 **简易图**
 
-![constructor2](assets\constructor.jpg)
+<!-- ![constructor2](assets\constructor.jpg) -->
 
 #### 对象的 `__proto__ `属性
 
@@ -155,7 +155,7 @@ console.log(student.__proto__ === Person.prototype); // true
 
 下面我们来看一下现在这几个对象之间的关系
 
-![proto](assets/proto.png)
+<!-- ![proto](assets/proto.png) -->
 
 `isPrototypeOf()` 方法用于测试一个对象是否存在于另一个对象的原型链上。
 
@@ -165,7 +165,7 @@ console.log(Person.prototype.isPrototypeOf(student)); // true
 
 **简易图**
 
-![](assets\proto.jpg)
+<!-- ![](assets\proto.jpg) -->
 
 ### 1.3 原型属性
 
