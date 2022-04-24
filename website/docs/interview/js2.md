@@ -169,13 +169,13 @@ console.log(Person.prototype.isPrototypeOf(student)); // true
 
 ### 1.3 原型属性
 
-##### 属性访问
+#### 属性访问
 
 每当代码读取对象的某个属性时，首先会在对象本身搜索这个属性，如果找到该属性就返回该属性的值，如果没有找到，则继续搜索该对象对应的原型对象，以此类推下去。
 
 因为这样的搜索过程，因此我们如果在实例中添加一个属性时，这个属性就会屏蔽原型对象中保存的同名属性，因为在实例中搜索到该属性后就不会再向后搜索了。
 
-##### 属性判断
+#### 属性判断
 
 既然一个属性既可能是实例本身的，也有可能是其原型对象的，那么我们该如何来判断呢？
 
@@ -200,4 +200,254 @@ console.log(student.hasOwnProperty("name")); // true
 function hasPrototypeProperty(object, name) {
   return !object.hasOwnProperty(name) && name in object;
 }
+```
+
+#### 所有属性获取
+
+```js
+function Person() {
+  this.name = "KXY";
+}
+Person.prototype = {
+  job: "student",
+};
+
+var kxy = new Person();
+Object.defineProperty(kxy, "sex", {
+  value: "female",
+  enumerable: false,
+});
+
+console.log(Object.keys(kxy)); //["name"] //无法获取不可枚举的属性与原型链上继承的属性
+console.log(Object.getOwnPropertyNames(kxy)); //["name", "sex"]
+//for...in能获取原型链上继承的属性，无法获取不可枚举的属性
+for (var pro in kxy) {
+  console.log("kxy." + pro + " = " + kxy[pro]); // kxy.name = KXY
+  //kxy.job = student
+}
+```
+
+**怎样判断属性是否为实例属性并且是否可枚举**
+
+如果想判断指定名称的属性是否为实例属性并且是否可枚举的，可以使用`propertyIsEnumerable`
+
+```js
+function Student(userName) {
+  this.userName = userName;
+}
+Student.prototype.sayHello = function () {
+  console.log("hello" + this.userName);
+};
+var stu = new Student();
+console.log(stu.propertyIsEnumerable("userName")); //true:userName为自身定义的实例属性
+console.log(stu.propertyIsEnumerable("age")); // false:age属性不存在，返回false
+console.log(stu.propertyIsEnumerable("sayHello")); // false :sayHello属于原型上的函数
+//将userName属性设置为不可枚举
+Object.defineProperty(stu, "userName", {
+  enumerable: false,
+});
+console.log(stu.propertyIsEnumerable("userName")); // false: userName设置了不可枚举
+```
+
+### 1.4 `Object.create( )`方法
+
+#### 基本使用
+
+该函数的主要作用是创建并返回一个指定原型和指定属性的新对象，语法格式如下：
+
+```js
+Object.create(prototype, propertyDescriptor);
+```
+
+`prototype`属性为对象的原型（必须），可以为`null`,如果为`null`，则对象的原型为`undefined`.
+
+`propertyDescriptor`表示的是属性描述符（可选），具体的格式如下：
+
+```js
+propertyName:{
+    value:'',  // 用来设置属性的值
+    writable:true, // 用来设置属性是否可写入, 默认为false, 表示只读
+    enumerable:true, // 用来设置属性是否可枚举, 默认为false, 不可枚举
+    configurable:true // 设置属性是否可配置, 例如是否可以修改属性的特性以及是否可以删除属性, 默认值为false
+}
+```
+
+基本实现：
+
+```js
+ <script type="text/javascript">
+      const person = {
+        userName: "zhangsan",
+        sayHello: function () {
+          console.log("hello " + this.userName);
+        },
+      };
+      const stu = Object.create(person);  // 这样操作后student原型就是person  student.__proto__ === person
+      stu.userName = "lisi";
+      stu.sayHello(); //hello lisi  覆盖了person中的userName属性原有的值
+    </script>
+```
+
+通过以上的代码，可以看到`stu`对象的原型是`person`.也就是`stu.__proto__===person`
+
+下面再来看一个案例：
+
+```js
+var obj = Object.create(null, {
+  userName: {
+    value: "wangwu",
+    writable: true,
+    enumerable: true,
+    configurable: true,
+  },
+  age: {
+    value: 23,
+  },
+});
+console.log(obj.userName);
+console.log(obj.age);
+obj.age = 26;
+console.log(obj.age);
+for (var o in obj) {
+  console.log(o);
+}
+delete obj.userName;
+console.log(obj.userName);
+delete obj.age;
+console.log(obj.age);
+```
+
+#### 实现原理
+
+通过如下的伪代码来查看对应的实现原理
+
+```js
+Object.create = function (proto, propertiesObject) {
+  //省略了其它判断操作
+  function F() {}
+  F.prototype = proto;
+  if (propertiesObject) {
+    Object.defineProperties(F, propertiesObject);
+  }
+  return new F();
+};
+```
+
+通过以上的代码，我们可以得出如下的结论：
+
+```js
+var f = new F();
+f.__proto__ === F.prototype;
+```
+
+下面我们可以通过一个例子来验证一下：
+
+```js
+var obj = { x: 12, y: 13 };
+var test = Object.create(obj);
+console.log(test);
+console.log(test.x);
+console.log(test.__proto__.x);
+```
+
+**最后，这里演示一下`Object.defineProperties`方法的基本使用**
+
+该方法的主要作用就是添加或修改对象的属性。
+
+如下代码所示：
+
+```js
+var person = {};
+
+Object.defineProperties(person, {
+  userName: {
+    value: "张三",
+    enumerable: true,
+  },
+  age: {
+    value: 12,
+    enumerable: true,
+  },
+});
+for (var p in person) {
+  console.log(p);
+}
+person.age = 20;
+console.log(person.age);
+```
+
+#### 应用场景
+
+对于`Object.create`方法很重要的一个应用场景是用来实现继承
+
+```js
+function Person(name, sex) {
+  this.name = name;
+  this.sex = sex;
+}
+Person.prototype.getInfo = function () {
+  console.log("getInfo: [name:" + this.name + ", sex:" + this.sex + "]");
+};
+var a = new Person("jojo", "femal");
+var b = Object.create(Person.prototype);
+console.log(a.name);
+console.log(b.name);
+console.log(b.getInfo);
+```
+
+下面看一下怎样实现完整的继承操作。
+
+```js
+function Person(name, sex) {
+  this.name = name;
+  this.sex = sex;
+}
+Person.prototype.getInfo = function () {
+  console.log("getInfo: [name:" + this.name + ", sex:" + this.sex + "]");
+};
+function Student(name, sex, age) {
+  Person.call(this, name, sex);
+  this.age = age;
+}
+Student.prototype = Object.create(Person.prototype);
+var s = new Student("coco", "femal", 25);
+s.getInfo();
+```
+
+下面，我们简单的分析一下，上面的代码。
+
+对象`s`的`__proto__`指向的是`s`的构造函数`Student`的`prototype`
+
+```js
+s.__proto__ === Student.prototype;
+```
+
+那么`Student.prototype`的`__proto__`指向什么呢？
+
+```js
+Student.prototype.__proto__ === Person.prototype;
+```
+
+```js
+s.__proto__.__proto__ === Person.prototype;
+```
+
+而我们知道对象`s`是有`Student` 创建的，所以其构造函数为`Student`,所以我们在修改了原型以后，这里应该重新修正构造函数。
+
+```js
+function Person(name, sex) {
+  this.name = name;
+  this.sex = sex;
+}
+Person.prototype.getInfo = function () {
+  console.log("getInfo: [name:" + this.name + ", sex:" + this.sex + "]");
+};
+function Student(name, sex, age) {
+  Person.call(this, name, sex);
+  this.age = age;
+}
+Student.prototype = Object.create(Person.prototype);
+Student.prototype.constructor = Student;
+var s = new Student("coco", "femal", 25);
+s.getInfo();
 ```
