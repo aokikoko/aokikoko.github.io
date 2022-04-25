@@ -451,3 +451,22 @@ Student.prototype.constructor = Student;
 var s = new Student("coco", "femal", 25);
 s.getInfo();
 ```
+
+### 1.5 `Object.create( )`与`new Object()`的区别
+
+### 1.6 模拟`new`操作符的实现
+
+在前面我们介绍了`new`操作符所做的三件事情，下面我们来模拟实现一下。
+
+```js
+function Person(name, age) {
+  this.name = name;
+  this.age = age;
+}
+function New() {
+  var obj = {};
+  var res = Person.apply(obj, arguments);
+  return typeof res === "object" ? res : obj;
+}
+console.log(New("zhangsan", 19));
+```
