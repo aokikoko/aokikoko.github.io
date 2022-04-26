@@ -470,3 +470,34 @@ function New() {
 }
 console.log(New("zhangsan", 19));
 ```
+
+### 1.7 原型链理解
+
+下面我们通过一个案例来看一个简单的原型链过程。初步代码如下
+
+```js
+var A = function () {};
+var a = new A();
+```
+
+通过`a` 实例沿着原型链第一次的追溯，`__proto__`属性指向`A()`构造函数的原型对象。
+
+```js
+a.__proto__ === A.prototype;
+```
+
+`a`实例沿着原型链第二次的追溯，`A`原型对象的`__proto__`属性指向`Object`类型的原型对象.
+
+```js
+a.__proto__.__proto__ === A.prototype.__proto__;
+A.prototype.__proto__ === Object.prototype;
+```
+
+`a` 实例沿着原型链第三次追溯，`Object`类型的原型对象的`__proto__`属性为`null`
+
+```js
+a.__proto__.__proto__.__proto__ === Object.prototype.__proto__;
+Object.prototype.__proto__ === null;
+```
+
+具体的图如下所示：
