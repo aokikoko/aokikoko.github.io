@@ -454,9 +454,58 @@ s.getInfo();
 
 ### 1.5 `Object.create( )`与`new Object()`的区别
 
+Object.create 和 new Object() 都是创建一个新的对象, 首先先看 new Object(), 就要看 new 操作符了,
+
+new 出来对象会继承构造函数的 prototype, 也就是新创建出来的对象的**proto** === 构造函数.prototype
+
+Object.create 创建的对象必须传入参数, 第一个参数也是对象, 所以 Object.create 创建出来新的对象的原型指向传入的第一个参数,
+
+而 new Object()创建出的指向构造函数的 prototype. 这就是第一个区别
+
+第二个区别, Object.create()可以传一个 null, 代表创建一个非常干净的对象, 没有原型. 此时这种新创建出的对象没法使用 Object 上通用的属性,
+
+比如 toString()
+
+```js
+const a = { age: 20 };
+const b = new Object(a);
+console.log(a === b); //true
+```
+
 ### 1.6 模拟`new`操作符的实现
 
 在前面我们介绍了`new`操作符所做的三件事情，下面我们来模拟实现一下。
+
+```js
+function Person(name, age) {
+  this.name = name;
+  this.age = age;
+}
+
+function New() {
+  var obj = {};
+
+  return obj;
+}
+// 此时返回的obj 并没有name和age两个属性, 而为了实现New函数完成对Person创建新对象. 所以对New函数进行补充
+function New() {
+  var obj = {};
+  Person.apply(obj, arguments); //这一行代码完成了对Person的调用, 同时让this指向了obj对象, obj对象就具有了name和age两个属性
+  return obj;
+}
+console.log(New("zhangsan", 19));
+// 至此完成了对new简单的实现, 但是还没有考虑Person的原型对象上的内容, 比如给Person的原型对象上添加sayHello方法, New函数创建出的
+// 对象上无法调用sayHello方法
+// 我们可以让obj.__proto__ 指向 Person.prototype
+
+function New() {
+  var obj = {};
+  obj.__proto__ = Person.prototype;
+  Person.apply(obj, arguments);
+  return obj;
+}
+console.log(New("zhangsan", 19));
+```
 
 ```js
 function Person(name, age) {
@@ -470,6 +519,15 @@ function New() {
 }
 console.log(New("zhangsan", 19));
 ```
+
+:::tip
+所以 new 做的三件事:
+
+1. 创建空对象
+2. 将空对象的**proto**属性指向构造函数的 prototype
+3. 对象构造函数方法的调用, 同时让 this 指向 new 出来的对象
+
+:::
 
 ### 1.7 原型链理解
 
@@ -501,3 +559,174 @@ Object.prototype.__proto__ === null;
 ```
 
 具体的图如下所示：
+
+![yuanxinglian](assets/yuanxinglian1.png)
+
+下面，我们再来看一个案例：
+
+```js
+function Super() {}
+
+function Middle() {}
+function Sub() {}
+
+Middle.prototype = new Super();
+Sub.prototype = new Middle();
+var suber = new Sub();
+```
+
+对应的原型链如下图所示：
+
+![yuanxinglian2](assets/yuanxinglian2.png)
+
+上面的图其实并不完整，因为漏掉了`Object`.所以完整的图如下
+
+![yuanxinglian3](assets/yuanxinglian3.png)
+
+### 1.8 原型链特点
+
+关于原型链的特点，主要有两个
+
+第一个特点：由于原型链的存在，属性查找的过程不再只是查找自身的原型对象，而是会沿着整个原型链一直向上，直到追溯到`Object.prototype`.也就是说，当`js`引擎在查找对象的属性时，先查找对象本身是否存在该属性，如果不存在，会在原型链上查找，直到`Object.prototype`.如果`Object.prototype`上也找不到该属性，则返回`undefined`,如果期间在对象本身找到了或者是某个原型对象上找到了该属性，则会返回对应的结果。
+
+由于这个特点，我们在自定义的对象中，可以调用某些未在自定义构造函数中定义的函数，例如`toString( )`函数。
+
+```js
+function Person() {}
+var p = new Person();
+p.toString(); // 实际上调用的是Object.prototype.toString( )
+```
+
+第二个特点：由于属性查找会经历整个原型链，因此查找的链路越长，对性能的影响越大。
+
+### 1.9 属性的区分
+
+对象属性的查找往往会涉及到整个原型链，那么应该怎样区分属性是实例自身的还是从原型链中继承的呢？
+
+关于这个问题，前面我们也已经讲解过，是通过`hasOwnProperty( )`函数来完成的，这里我们在简单的复习强调一下。
+
+```js
+function Person(name, age) {
+  this.name = name;
+}
+//在对象的原型上添加age属性
+Person.prototype.age = 21;
+var p = new Person("zhangsan");
+console.log(p.hasOwnProperty("name")); //true
+console.log(p.hasOwnProperty("age")); //false
+```
+
+`name`属性为实例属性，在调用`hasOwnProperty`方法时，会返回`true`。`age`属性为原型对象上的属性，在调用`hasOwnProperty`函数时，会返回`false`.
+
+在使用`for...in`运算符，遍历对象的属性时，一般可以配合`hasOwnProperty`方法一起使用，检测某个属性是否为对象自身的属性，如果是，可以做相应的处理。
+
+```js
+for (var p in person) {
+  if (person.hasOwnProperty(p)) {
+  }
+}
+```
+
+## 2、Array 类型
+
+`Array`类型中提供了丰富的函数用于对数组进行处理，例如，过滤，去重，遍历等等操作。
+
+### 2.1 怎样 判断一个变量是数组还是对象
+
+这里，我们可能会想到使用`typeof`运算符，因为`typeof`运算符是专门用于检测数据类型的，但是`typeof`运算符能够满足我们的需求吗？
+
+```js
+var a = [1, 2, 3];
+console.log(typeof a);
+```
+
+#### 方式一: 2.1.1 `instanceof`运算符
+
+`instanceof`运算符用于通过查找原型链来检查某个变量是否为某个类型数据的实例，使用`instanceof`运算符可以判断一个变量是数组还是对象。
+
+```js
+var a = [1, 2, 3];
+console.log(a instanceof Array); // true
+console.log(a instanceof Object); // true
+
+var userInfo = { userName: "zhangsan" };
+console.log(userInfo instanceof Array); // false
+console.log(userInfo instanceof Object); // true
+```
+
+这里我们可以封装一个函数，用于判断变量是数组类型还是对象类型。
+
+```js
+var a = [1, 2, 3];
+function getType(o) {
+  if (o instanceof Array) {
+    return "Array";
+  } else if (o instanceof Object) {
+    return "Object";
+  } else {
+    return "参数类型不是Array也不是Object";
+  }
+}
+console.log(getType(a));
+```
+
+#### 方式二: 2.1.2 通过构造函数来判断
+
+判断一个变量是否是数组还是对象，其实就是判断变量的构造函数是`Array`类型还是`Object`类型。
+
+因为一个对象的实例都是通过构造函数创建的。
+
+```js
+var a = [1, 2, 3];
+console.log(a.__proto__.constructor === Array);
+```
+
+```js
+console.log(a.__proto__.constructor === Object); // false
+```
+
+同样这里，这里我们也可以封装一个函数，来判断变量是数组类型还是对象类型。
+
+```js
+function getType(o) {
+  //获取构造函数
+  var constructor = o.__proto__.constructor;
+  if (constructor === Array) {
+    return "Array";
+  } else if (constructor === Object) {
+    return "Object";
+  } else {
+    return "参数类型不是Array也不是Object";
+  }
+}
+var a = [1, 2, 3];
+console.log(getType(a));
+```
+
+#### 方式三: 2.1.3 通过`toString( )`函数来判断
+
+我们知道，每种引用类型都会直接或间接继承`Object`类型，因此它们都包含`toString( )`函数。
+
+不同数据类型的`toString( )`函数返回值也不一样，所以通过`toString( )`函数就可以判断一个变量是数组还是对象，当然，这里我们需要用到`call`方法来调用`Object`原型上的`toString( )`函数来完成类型的判断。
+
+如下所示：
+
+```js
+var arr = [1, 2, 3];
+var obj = { userName: "zhangsan" };
+console.log(Object.prototype.toString.call(arr)); //[object Array]
+console.log(Object.prototype.toString.call(obj)); // [object Object]
+console.log(arr.toString()); // 1,2,3
+```
+
+#### 方式四: 2.1.4 通过`Array.isArray( )`函数来判断
+
+`Array.isArray` 方法用来判断变量是否为数组。
+
+```js
+var arr = [1, 2, 3];
+var obj = { name: "zhangsan" };
+console.log(Array.isArray(1)); //false
+console.log(Array.isArray(arr)); //true
+console.log(Array.isArray(obj)); //false
+```
