@@ -730,3 +730,119 @@ console.log(Array.isArray(1)); //false
 console.log(Array.isArray(arr)); //true
 console.log(Array.isArray(obj)); //false
 ```
+
+### 2.2 怎样过滤数组中满足条件的数据
+
+对数组中的数据进行过滤，我们使用比较多的是`filter`方法。filter 函数用于过滤满足条件的数据, 它返回一个新数组, 不会改变原数组
+
+```js
+<script>
+      var fn = function (x) {
+        return x % 2 !== 0;
+      };
+      var arr = [1, 2, 5, 6, 78, 9, 10];
+      var result = arr.filter(fn);
+      console.log(result);
+    </script>
+```
+
+下面，我们再来看一下针对复杂类型数组的过滤。
+
+下面案例是查找出年龄大于 16 的男生的信息。
+
+```js
+var arr = [
+  { gender: "男", age: 15 },
+  { gender: "男", age: 17 },
+  { gender: "女", age: 15 },
+];
+var fn = function (obj) {
+  return obj.gender === "男" && obj.age > 16;
+};
+const result = arr.filter(fn);
+console.log(result);
+```
+
+### 2.3 怎样对数组元素做累加处理
+
+对数组中的元素做累加的处理，可以通过`reduce`函数来完成。
+
+`reduce`函数最主要的作用就是做累加的操作，该函数接收一个函数作为累加器，将数组中的每个元素从左到右依次执行累加器，返回最终的处理结果。
+
+`reduce`函数的语法如下：
+
+```js
+arr.reduce(callback(accumulator, currentValue[, index[, array]])[, initialValue])
+```
+
+求出数组中所有元素累加的和
+
+```js
+var arr = [1, 2, 3, 4, 5, 6];
+var sum = arr.reduce(function (accumulator, currentValue) {
+  return accumulator + currentValue;
+}, 0);
+console.log(sum);
+```
+
+### 2.4 怎样求数组中的最大值与最小值
+
+关于查询出数组中的最大值与最小值的实现方式有很多种，下面我们来看一下具体的实现。
+
+第一：通过`prototype`属性扩展`min`函数和`max`函数来实现求最小值与最大值
+
+```js
+//最小值
+Array.prototype.min = function () {
+  var min = this[0];
+  var len = this.length;
+  for (var i = 1; i < len; i++) {
+    if (this[i] < min) {
+      min = this[i];
+    }
+  }
+  return min;
+};
+//最大值
+Array.prototype.max = function () {
+  var max = this[0];
+  var len = this.length;
+  for (var i = 1; i < len; i++) {
+    if (this[i] > max) {
+      max = this[i];
+    }
+  }
+  return max;
+};
+var arr = [1, 3, 6, 90, 23];
+console.log(arr.min()); // 1
+console.log(arr.max()); // 90
+```
+
+第二：通过数组的`reduce`函数来完成。
+
+```js
+Array.prototype.max = function () {
+  return this.reduce(function (preValue, currentValue) {
+    return preValue > currentValue ? preValue : currentValue; //返回最大的值
+  });
+};
+Array.prototype.min = function () {
+  return this.reduce(function (preValue, currentValue) {
+    return preValue < currentValue ? preValue : currentValue; // 返回最小的值
+  });
+};
+var arr = [1, 3, 6, 90, 23];
+console.log(arr.min()); //
+console.log(arr.max()); //
+```
+
+第三：通过`ES6`中的扩展运算符来实现
+
+这里我们可以通过`ES6`中的扩展运算符(...)来实现。
+
+```js
+var arr = [1, 3, 6, 90, 23];
+console.log(Math.min(...arr)); //
+console.log(Math.max(...arr));
+```
