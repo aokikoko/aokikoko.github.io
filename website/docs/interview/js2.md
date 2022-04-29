@@ -846,3 +846,150 @@ var arr = [1, 3, 6, 90, 23];
 console.log(Math.min(...arr)); //
 console.log(Math.max(...arr));
 ```
+
+### 2.5 数组遍历的方式有哪些
+
+数组遍历是我们针对数组最频繁的操作。下面我们看一下常见的数组的遍历方式。
+
+#### 通过 for 循环
+
+这时最基本的实现方式
+
+```js
+var arr = [1, 2, 3];
+for (var i = 0; i < arr.length; i++) {
+  console.log(arr[i]);
+}
+```
+
+#### 使用`forEach( )`函数
+
+`forEach`函数也是我们遍历数组用的比较多的方法，`forEach( )`函数接收一个回调函数，参数分别表示当前执行的元素的值，当前值的索引和数组本身。
+
+```js
+var arr = [1, 3, 6, 90, 23];
+arr.forEach(function (element, index, array) {
+  console.log(index + ":" + element);
+});
+```
+
+#### 使用`map( )`函数
+
+```js
+var arr = [1, 3, 6, 90, 23];
+var result = arr.map(function (element, index, array) {
+  console.log(index);
+  return element * element;
+});
+console.log("result: ===", result);
+```
+
+在使用`map`函数的时候一定要注意：在`map( )`函数的回调函数中需要通过`return`将处理后的值进行返回，否则会返回`undefined`.
+
+如下所示：
+
+```js
+var arr = [1, 3, 6, 90, 23];
+var result = arr.map(function (element, index, array) {
+  // console.log(index);
+  element * element;
+});
+console.log("result: ===", result);
+```
+
+在上面的计算中，将`return`关键字省略了，最终返回的结果是：
+
+```js
+[undefined, undefined, undefined, undefined, undefined];
+```
+
+#### 使用`some( )`函数与`every( )`函数
+
+`some( )`函数与`every( )`函数的相似之处都是在对数组进行遍历的过程中，判断数组中是否有满足条件的元素，如果有满足条件的就返回`true`,否则返回`false`.
+
+`some()`与`every()`的区别在于:`some( )`函数只要数组中某个元素满足条件就返回`true`,不会在对后面的元素进行判断。而`every( )`函数是数组中每个元素都要满足条件时才会返回`true`.
+
+例如：要判断数组中是否有大于 6 的元素的时候，可以通过`some( )`函数来处理。
+
+而要判断数组中是否所有的元素都大于 6，则需要通过`every( )`函数来处理。
+
+```js
+function fn(element, index, array) {
+  return element > 6;
+}
+var result = [1, 2, 3, 4, 5].some(fn); //false
+console.log(result);
+```
+
+```js
+var result = [1, 2, 3, 4, 5, 7].some(fn);
+console.log(result); //true
+```
+
+下面测试一下`every( )`函数
+
+```js
+function fn(element, index, array) {
+  return element > 6;
+}
+var result = [1, 2, 3, 4, 5, 7].every(fn); //false
+console.log(result);
+```
+
+下面修改一下数组中的元素。
+
+```js
+function fn(element, index, array) {
+  return element > 6;
+}
+var result = [7, 8].every(fn); //true
+console.log(result);
+```
+
+现在数组中的元素的值都是大于 6，所以返回的结果为`true`.
+
+#### 使用`find( )`函数
+
+`find( )` 函数用于数组的遍历，当找到第一个满足条件的元素值时，则直接返回该元素值，如果都找不到满足条件的，则返回`undefined`.
+
+`find( )`方法的参数与`forEach`是一样的。
+
+```js
+var arr = [1, 3, 6, 90, 23];
+const result = arr.find(function (element, index, array) {
+  return element > 6;
+});
+console.log(result); // 90
+```
+
+```js
+var arr = [1, 3, 6, 90, 23];
+const result = arr.find(function (element, index, array) {
+  return element > 100; //undefined
+});
+console.log(result);
+```
+
+以上就是我们比较常用的数组遍历的方式。当然还有我们前面讲解过的`filter`，`reduce`函数。
+
+### 2.6 手动实现`find`方法
+
+```js
+ <script>
+      Array.prototype.findTest = function (fn) {
+        for (var i = 0; i < this.length; i++) {
+          var f = fn(this[i]);//把数组元素传递到函数中
+          if (f) { //如果函数的返回值为true
+            return this[i]; //则返回对应的数组元素
+          }
+        }
+      };
+      var arr = [1, 3, 6, 90, 23];
+      var result = arr.findTest(function (item) {
+        return item > 6;
+      });
+      console.log(result);
+</script>
+```
+
+### Todo..
