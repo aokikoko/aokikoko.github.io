@@ -940,3 +940,475 @@ function fn() {
 var f1 = fn();
 f1(11); // 11
 ```
+
+### 闭包的应用场景 1.**应用缓存**
+
+**应用缓存**
+
+:::tip
+开发过程中, 如果遇到处理比较耗时的函数, 每次调用这样的函数的话, 都会消耗比较长的时间, 而我们发现这个函数它的相关内容并不会经常改变, 这样就可以将他的计算结果进行缓存, 下次执行的时候先判断缓存当中是否有值, 如果有值就直接返回, 如果没有值就调用函数进行计算, 将计算结果更新到缓存中
+:::
+
+```js
+// 立即函数
+var cacheApp = (function () {
+  var cache = {};
+  return {
+    getResult: function (id) {
+      // 如果在内存中，则直接返回
+      if (id in cache) {
+        return "得到的结果为:" + cache[id];
+      }
+      //经过耗时函数的处理
+      var result = timeFn(id);
+      //更新缓存
+      cache[id] = result;
+      //返回计算的结果
+      return "得到的结果为:" + result;
+    },
+  };
+})();
+//耗时函数
+function timeFn(id) {
+  console.log("这是一个非常耗时的任务");
+  return id;
+}
+console.log(cacheApp.getResult(23));
+console.log(cacheApp.getResult(23));
+```
+
+### 闭包的应用场景 2.**代码封装**
+
+在编程的时候，我们提倡将一定特征的代码封装到一起，只需要对外暴露对应的方法就可以，从而不用关心内部逻辑的实现。
+
+```js
+ <script>
+      var stack = (function () {
+        //使用数组模拟栈
+        var arr = [];
+        return {
+          push: function (value) {
+            arr.push(value);
+          },
+          pop: function () {
+            return arr.pop();
+          },
+          size: function () {
+            return arr.length;
+          },
+        };
+      })();
+      stack.push("abc");
+      stack.push("def");
+      console.log(stack.size()); // 2
+      console.log(stack.pop()); // def
+	  console.log(stack.size()); // 1
+    </script>
+```
+
+:::tip
+上面这个例子, 当我们去执行这个立即执行函数的时候, 在函数内部产生一个执行上下文环境, 并且在匿名函数执行完毕以后, 整个执行上下文环境并不会被销毁, 因为在内部有个对象, 对象中有 push, pop,等方法都使用了 arr 这个变量的引用, 所以 arr 这个变量会继续存在于内存中
+:::
+
+### 闭包常见面试题
+
+第一：如下程序执行的结果为：
+
+获取所单击的`li`元素的索引值
+
+```html
+<ul>
+  <li>a</li>
+  <li>b</li>
+  <li>c</li>
+  <li>d</li>
+  <li>e</li>
+</ul>
+```
+
+对应的`js`代码如下：
+
+```js
+// 获取所单击的`li`元素的索引值, 打出来全是5
+var list = document.getElementsByTagName("ul")[0].children;
+for (var i = 0; i < list.length; i++) {
+  list[i].onclick = function () {
+    console.log(i);
+  };
+}
+```
+
+可以采用闭包解决这个问题：
+
+```js
+// 给for循环体内添加一个匿名的立即执行函数以后, 会将索引值i传入到立即执行函数中, 这个立即执行函数中存在对外部变量list的引用, 会形成闭包, 闭包中index这个变量会持续存在内存中, 所以每次点击li的时候都会输出索引值
+var list = document.getElementsByTagName("ul")[0].children;
+for (var i = 0; i < list.length; i++) {
+  (function (index) {
+    list[index].onclick = function () {
+      console.log(index);
+    };
+  })(i);
+}
+```
+
+第二：如下程序输出结果是：
+
+```js
+// 打印出3个undefined
+// 原因: 当浏览器中打开页面, 先去执行for循环, 也就是说当停留1秒钟以后, 再去执行settimeout里面这个函数之前, for循环已经走完了, for循环走完以后对应的i的取值是3, 而arr[3]是undefined
+var arr = ["a", "b", "c"];
+for (var i = 0; i < arr.length; i++) {
+  setTimeout(function () {
+    console.log(arr[i]);
+  }, 1000);
+}
+```
+
+代码修改后的内容为：
+
+```js
+var arr = ["a", "b", "c"];
+for (var i = 0; i < arr.length; i++) {
+  (function (index) {
+    setTimeout(function () {
+      console.log(arr[index]);
+    }, 1000);
+  })(i);
+}
+```
+
+第三：以下程序打印结果是：
+
+```js
+var userName = "zhangsan";
+var person = {
+  userName: "lisi",
+  method: function () {
+    return function () {
+      return this.userName;
+    };
+  },
+};
+console.log(person.method()()); //zhangsan
+
+// 原因: person.method()执行后得到一个函数, 而这个函数是在window下执行
+// 如果要改造需要让this指向person
+```
+
+```js
+var userName = "zhangsan";
+var person = {
+  userName: "lisi",
+  method: function () {
+    var that = this; //用that保存person的this
+    return function () {
+      return that.userName;
+    };
+  },
+};
+console.log(person.method()());
+```
+
+第四：以下程序的输出结果
+
+```js
+function create() {
+  var a = 100;
+  return function () {
+    console.log(a);
+  };
+}
+var fn = create();
+var a = 200;
+fn(); // 100
+```
+
+第五：以下程序的输出结果：
+
+```js
+function print(fn) {
+  var a = 200;
+  fn();
+}
+var a = 100;
+function fn() {
+  console.log(a); // 100
+}
+print(fn);
+```
+
+### 重点: `闭包的变量查找`
+
+:::caution
+在闭包中, 如果需要变量查找的话, 是在函数定义的地方向上级作用域查找, 而不是在执行的地方
+:::
+
+### 闭包优缺点
+
+闭包的优点：
+
+第一：保护函数内变量的安全，实现封装，防止变量流入其它环境发生命名冲突，造成环境污染。
+
+第二：在适当的时候，可以在内存中维护变量并缓存，提高执行效率
+
+闭包的缺点：
+
+消耗内存：通常来说，函数的活动对象会随着执行上下文环境一起被销毁，但是由于闭包引用的是外部函数的活动对象，因此这个活动对象无法被销毁，所以说，闭包比一般的函数需要消耗更多的内存。
+
+## 12、this 指向
+
+### 常见面试题
+
+我们知道，当我们创建一个构造函数的实例的时候，需要通过`new`操作符来完成创建，当创建完成后，函数体中的`this`指向了这个实例。
+
+如下代码所示：
+
+```js
+function Person(userName) {
+  this.userName = userName;
+}
+var person = new Person("zhangsan");
+console.log(person.userName);
+```
+
+如果，我们将上面的`Person`函数当作一个普通函数来调用执行，那么对应的`this`会指向谁呢？
+
+```js
+function Person(userName) {
+  this.userName = userName;
+}
+Person("lisi");
+console.log(window.userName);
+```
+
+通过上面的程序，我们可以总结出，`this`指向的永远是函数的调用者。
+
+第一：如下程序的输出结果：
+
+```js
+var a = 10;
+var obj = {
+  a: 120,
+  method: function () {
+    var bar = function () {
+      console.log(this.a); // 10
+    };
+    bar(); //这里是通过window对象完成bar方法的调用
+    return this.a;
+  },
+};
+console.log(obj.method()); // 120
+```
+
+第二：如下程序的输出结果是：
+
+```js
+var num = 10;
+function Person() {
+  //给全局变量重新赋值
+  num = 20;
+  // 实例变量
+  this.num = 30;
+}
+Person.prototype.getNum = function () {
+  return this.num;
+};
+var person = new Person();
+console.log(person.getNum()); // 30
+```
+
+第三：如下程序的输出结果是：
+
+```js
+function fn() {
+  console.log(this);
+}
+let obj = {
+  fn: fn,
+};
+fn(); //window
+obj.fn(); //obj
+```
+
+第四：如下程序的输出结果是：
+
+```js
+var fullName = "language";
+var obj = {
+  fullName: "javascript",
+  prop: {
+    getFullName: function () {
+      return this.fullName;
+    },
+  },
+};
+console.log(obj.prop.getFullName()); // undefined
+var test = obj.prop.getFullName; // language
+console.log(test());
+```
+
+第五：如下程序的输出结果是：
+
+```js
+var val = 1;
+var json = {
+  val: 10,
+  dbl: function () {
+    val *= 2; //这里由于前面没有添加this,也就是没有写成this.val,所以这里的val指向了全局变量
+  },
+};
+json.dbl();
+console.log(json.val + val); // 12
+```
+
+如果将上面的题目修改成如下的形式：
+
+```js
+var val = 1;
+var json = {
+  val: 10,
+  dbl: function () {
+    this.val *= 2; //20
+  },
+};
+json.dbl();
+console.log(json.val + val); //21  20+1=21
+```
+
+第六，如下程序的输出结果是：
+
+```js
+var num = 10;
+var obj = { num: 20 };
+obj.fn = (function (num) {
+  this.num = num * 3;
+  num++;
+  return function (n) {
+    this.num += n;
+    num++;
+    console.log(num);
+  };
+})(obj.num);
+var fn = obj.fn;
+fn(5);
+obj.fn(10);
+console.log(num, obj.num);
+```
+
+第七：`this` 指向`call()`函数，`apply()`函数，`bind()`函数调用后重新绑定的对象。
+
+我们知道通过`call()`函数，`apply()`函数，`bind()`函数可以改变函数执行的主体，如果函数中存在`this`关键字，则`this`指向`call()`函数，`apply()`函数，`bind()`函数处理后的对象。
+
+代码如下：
+
+```js
+//全局变量
+var value = 10;
+var obj = {
+  value: 20,
+};
+// 全局函数
+var method = function () {
+  console.log(this.value);
+};
+method(); // 10
+method.call(obj); // 20
+method.apply(obj); // 20
+var newMethod = method.bind(obj);
+newMethod(); // 20
+```
+
+下面我们再来看一段代码，看一下对应的执行结果：
+
+```html
+<body>
+  <button id="btn">获取用户信息</button>
+  <script>
+    var userInfo = {
+      data: [
+        { userName: "zhangsan", age: 20 },
+        { userName: "lisi", age: 21 },
+      ],
+      getUserInfo: function () {
+        var index = 1;
+        console.log(this.data[index].userName + " " + this.data[index].age);
+      },
+    };
+    var btn = document.getElementById("btn");
+    btn.onclick = userInfo.getUserInfo;
+  </script>
+</body>
+```
+
+修改后的代码：
+
+```js
+var btn = document.getElementById("btn");
+//   btn.onclick = userInfo.getUserInfo;
+btn.onclick = userInfo.getUserInfo.bind(userInfo);
+```
+
+第八、如下程序的输出结果是：
+
+```js
+    <button id="btn">获取用户信息</button>
+    <script>
+      var userInfo = {
+        data: [
+          { userName: "zhangsan", age: 20 },
+          { userName: "lisi", age: 21 },
+        ],
+        getUserInfo: function () {
+          this.data.forEach(function (p) {
+            console.log(this);
+          });
+        },
+      };
+      var btn = document.getElementById("btn");
+      //   btn.onclick = userInfo.getUserInfo;
+      btn.onclick = userInfo.getUserInfo.bind(userInfo);
+    </script>
+```
+
+修改后的代码：
+
+```js
+<script>
+      var userInfo = {
+        data: [
+          { userName: "zhangsan", age: 20 },
+          { userName: "lisi", age: 21 },
+        ],
+        getUserInfo: function () {
+          var that = this;//保存this
+          this.data.forEach(function (p) {
+            console.log(that);//这里的that 指的就是当前的userInfo对象。
+          });
+        },
+      };
+      var btn = document.getElementById("btn");
+      //   btn.onclick = userInfo.getUserInfo;
+      btn.onclick = userInfo.getUserInfo.bind(userInfo);
+    </script>
+```
+
+或者是修改成箭头函数
+
+```js
+var userInfo = {
+  data: [
+    { userName: "zhangsan", age: 20 },
+    { userName: "lisi", age: 21 },
+  ],
+  getUserInfo: function () {
+    //   var that = this;
+    this.data.forEach((p) => {
+      console.log(this);
+    });
+  },
+};
+var btn = document.getElementById("btn");
+//   btn.onclick = userInfo.getUserInfo;
+btn.onclick = userInfo.getUserInfo.bind(userInfo);
+```
