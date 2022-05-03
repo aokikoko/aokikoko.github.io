@@ -1179,10 +1179,10 @@ function Person(userName) {
   this.userName = userName;
 }
 Person("lisi");
-console.log(window.userName);
+console.log(window.userName); // "lisi"
 ```
 
-通过上面的程序，我们可以总结出，`this`指向的永远是函数的调用者。
+通过上面的程序，我们可以总结出，`this`指向的是函数的调用者。
 
 第一：如下程序的输出结果：
 
@@ -1282,16 +1282,16 @@ console.log(json.val + val); //21  20+1=21
 var num = 10;
 var obj = { num: 20 };
 obj.fn = (function (num) {
-  this.num = num * 3;
-  num++;
+  this.num = num * 3; //这里this指向window, 因为在window中执行的立即执行函数 this.num = 20 * 3
+  num++; // 20 + 1 =21
   return function (n) {
     this.num += n;
-    num++;
-    console.log(num);
+    num++; // 这里形成了闭包, 因为这个作用域里没有num, 去上一层作用域去找, 上面的是21, 所以这里21++ = 22
+    console.log(num); // 22
   };
 })(obj.num);
 var fn = obj.fn;
-fn(5);
+fn(5); // window调用的返回的fn函数
 obj.fn(10);
 console.log(num, obj.num);
 ```
@@ -1336,7 +1336,8 @@ newMethod(); // 20
       },
     };
     var btn = document.getElementById("btn");
-    btn.onclick = userInfo.getUserInfo;
+    btn.onclick = userInfo.getUserInfo; // 报错undefined
+    // 因为谁调用, this就指向谁, 现在是button调用的, 但是button上没有data属性. 如何解决: 让this指向userInfo, 所以看下面修改后的代码
   </script>
 </body>
 ```
@@ -1360,8 +1361,8 @@ btn.onclick = userInfo.getUserInfo.bind(userInfo);
           { userName: "lisi", age: 21 },
         ],
         getUserInfo: function () {
-          this.data.forEach(function (p) {
-            console.log(this);
+          this.data.forEach(function (p) {  // 这一行的this指向userInfo
+            console.log(this);  // 这个this指向window, 为什么这个this指向window, 因为这里有闭包, 在闭包环境中这个this无法获取到具体的userInfo. 在闭包环境中this关键字无法获取或者说访问到外部函数的this变量. 所以console的this, 无法拿到this.data的this, 所以this指向window
           });
         },
       };
@@ -1404,7 +1405,7 @@ var userInfo = {
   getUserInfo: function () {
     //   var that = this;
     this.data.forEach((p) => {
-      console.log(this);
+      console.log(this); // 箭头函数没有自己的this, 定义在哪就指向谁. 这里其实就是把箭头函数定义在userInfo对象里面了, 所以就指向userInfo
     });
   },
 };
@@ -1412,3 +1413,332 @@ var btn = document.getElementById("btn");
 //   btn.onclick = userInfo.getUserInfo;
 btn.onclick = userInfo.getUserInfo.bind(userInfo);
 ```
+
+## 13、call()函数，apply( )函数，bind( )函数的使用与区别
+
+在前面我们简单的说过`call( )`函数，`apply( )`函数，`bind( )`函数，的作用。
+
+`call( )`函数，`apply( )`函数，`bind( )`函数,的作用都是改变`this`的指向，但是在使用方式上是有一定的区别的。
+
+下面我们分别来看一下它们各自的使用方式：
+
+### `call( )`函数的基本使用
+
+基本语法如下：
+
+```js
+function.call(thisObj,arg1,arg2,...)
+```
+
+`function`表示的是：需要调用的函数。
+
+`thisObj`表示：`this`指向的对象，也就是`this`将指向`thisObj`这个参数，如果`thisObj`的值为`null`或者是`undefined`,则`this`指向的是全局对象。
+
+`arg1,arg2,..`表示：调用的函数需要的参数。
+
+```js
+function add(a, b) {
+  console.log(this);
+  console.log(a + b);
+}
+function sub(a, b) {
+  console.log(a - b);
+}
+
+add.call(sub, 3, 1); // 调用add方法，但是add方法中的this指向的是sub,最终的输出结果是4
+```
+
+### `apply( )`函数的基本使用
+
+`apply()`函数的作用与`call()`函数的作用是一样的，不同的是在传递参数的时候有一定的差别
+
+语法格式如下：
+
+```js
+function.apply(thisObj,[argsArray])
+```
+
+`function`表示的是：需要调用的函数。
+
+`thisObj`:`this`指向的对象，也就是`this`将指向`thisObj`这个参数，如果`thisObj`的值为`null`或者是`undefined`,则`this`指向的是全局对象。
+
+`[argsArray]`:表示的是函数需要的参数会通过数组的形式进行传递,如果传递的不是数组或者是 arguments 对象，会抛出异常。
+
+```js
+function add(a, b) {
+  console.log(this); // 这里指向的是sub
+  console.log(a + b);
+}
+function sub(a, b) {
+  console.log(a - b);
+}
+
+add.apply(sub, [3, 1]);
+```
+
+### `bind`函数的基本使用
+
+```js
+function.bind(thisObj,arg1,arg2,...)
+```
+
+通过上面语法格式，可以看出`bind`函数与`call`函数的参数是一样的。
+
+不同 的是`bind`函数会返回一个新的函数，可以在任何时候进行调用。
+
+```js
+function add(a, b) {
+  console.log(this); // 这里指向的是sub
+  console.log(a + b);
+}
+function sub(a, b) {
+  console.log(a - b);
+}
+
+var newFun = add.bind(sub, 3, 1); //bind 返回的是一个新的函数。
+newFun(); //完成对add函数的调用，同时this指向了sub
+```
+
+### 三个函数的比较
+
+通过前面对三个函数的基本使用，可以看出，它们共同点就是改变`this`的指向。
+
+不同点：
+
+`call()`函数与`apply()`函数，会立即执行函数的调用，而`bind`返回的是一个新的函数，可以在任何时候进行调用。
+
+`call()`函数与`bind`函数的参数是一样的，而`apply`函数第二个参数是一个数组或者是`arguments`对象。
+
+这里，我们重点看一下，关于`call()`函数，`bind()`函数，`apply()`函数的应用场景。
+
+### 应用场景 1 `**继承的实现**`
+
+```js
+function Person(userName, userAge) {
+  this.userName = userName;
+  this.userAge = userAge;
+}
+function Student(name, age, gender) {
+  Person.call(this, name, age); // 这句的意思是通过call函数来完成对Person的调用, this代表要指向的对象, 此时this代表Student构造函数创造出来的对象, 在Person中所用的this就是指向了student, 所以 student.userName 和student.userAge都具有了这两个属性, 此时完成了继承.
+  this.gender = gender;
+}
+var student = new Student("zhangsan", 20, "男");
+console.log(
+  "userName=" +
+    student.userName +
+    ",userAge=" +
+    student.userAge +
+    ",gender=" +
+    student.gender
+);
+```
+
+### 应用场景 2 `**改变匿名函数的this指向**`
+
+首先看一下如下程序的执行结果：
+
+```js
+var person = [
+  { id: 1, userName: "zhangsan" },
+  { id: 2, userName: "lisi" },
+];
+for (var i = 0; i < person.length; i++) {
+  (function (i) {
+    this.print = function () {
+      console.log(this.id); // 打印的都是undefined, 因为这个立即执行函数的this指向window
+    };
+    this.print();
+  })(i);
+}
+```
+
+具体的实现方式如下：
+
+```js
+var person = [
+  { id: 1, userName: "zhangsan" },
+  { id: 2, userName: "lisi" },
+];
+for (var i = 0; i < person.length; i++) {
+  (function (i) {
+    this.print = function () {
+      console.log(this.id);
+    };
+    this.print();
+  }.call(person[i], i));
+}
+```
+
+### 应用场景 3 `**将arguments转换成数组**`
+
+```js
+function fn() {
+  var arr = Array.prototype.slice.call(arguments);
+  arr.push(6);
+  return arr;
+}
+console.log(fn(1, 2));
+```
+
+### 应用场景 4 `**求数组中的最大值与最小值**`
+
+```js
+var arr = [3, 6, 7, 1, 9];
+console.log(Math.max.apply(null, arr));
+console.log(Math.min.apply(null, arr));
+```
+
+### 手写 call、apply 及 bind 函数
+
+**`call`方法的实现**
+
+```js
+// context表示要调用myCall函数的时候, 所写的第一个参数,也就是this要指向的对象
+Function.prototype.myCall = function (context) {
+  var args = [...arguments].slice(1);
+
+  context = context || window;
+
+  context.fn = this; //Sub.fn = Add
+
+  var result = context.fn(...args); // Sub.fn(6,3)
+  return result;
+};
+function Add(num1, num2) {
+  console.log(this);
+  console.log(num1 + num2);
+}
+function Sub(num1, num2) {
+  console.log(num1 - num2);
+}
+Add.myCall(Sub, 6, 3);
+```
+
+**`apply`函数的实现**
+
+```js
+Function.prototype.myApply = function (context) {
+  var result = null;
+  context = context || window;
+  context.fn = this;
+  if (arguments[1]) {
+    // console.log("arguments=", arguments[1]);// arguments= (2) [6, 3]
+    result = context.fn(...arguments[1]);
+  } else {
+    result = context.fn();
+  }
+  return result;
+};
+function Add(num1, num2) {
+  console.log(this);
+  console.log(num1 + num2);
+}
+function Sub(num1, num2) {
+  console.log(num1 - num2);
+}
+Add.myApply(Sub, [6, 3]);
+```
+
+**`bind`函数的实现**
+
+```js
+Function.prototype.myBind = function (context) {
+  // 获取参数
+  var args = [...arguments].slice(1), // [1,5]
+    fn = this;
+  // console.log(this);//Add
+  return function Fn() {
+    // console.log(this); //Window
+    return fn.apply(context, args);
+  };
+};
+function Add(num1, num2) {
+  console.log(this);
+  console.log(num1 + num2);
+}
+function Sub(num1, num2) {
+  console.log(num1 - num2);
+}
+var newFun = Add.myBind(Sub, 1, 5);
+newFun();
+```
+
+```js
+  <script>
+      function add(a, b) {
+        console.log(this); // 这里指向的是sub
+        console.log(a + b);
+      }
+      function sub(a, b) {
+        console.log(a - b);
+      }
+
+      var newFun = add.bind(sub, 3); //bind 返回的是一个新的函数。
+      newFun(2); //完成对add函数的调用，同时this指向了sub
+    </script>
+```
+
+下面，我们就实现一下关于`myBind`方法参数的模拟。
+
+```js
+Function.prototype.myBind = function (context) {
+  // 获取参数
+  var args = [...arguments].slice(1),
+    fn = this;
+  // console.log(this);//Add
+  return function Fn() {
+    // console.log(this); //Window
+    //这里是调用bind函数的时候传递的参数，将其转换成数组
+    var bindArgs = Array.prototype.slice.call(arguments);
+    //下面完成参数的拼接
+    return fn.apply(context, args.concat(bindArgs));
+  };
+};
+function Add(num1, num2) {
+  console.log(this);
+  console.log(num1 + num2);
+  return 10;
+}
+function Sub(num1, num2) {
+  console.log(num1 - num2);
+}
+var newFun = Add.myBind(Sub, 1);
+console.log(newFun(8));
+```
+
+## 14、回调函数有什么缺点
+
+在`JavaScript`编程过程中，我们经常会写回调函数。
+
+我们知道在`JavaScript`中函数也是一种对象，对象可以作为参数传递给函数，因此函数也可以作为参数传递给另外一个函数，这个作为参数的函数就是回调函数。
+
+例如，如下的代码示例：
+
+```js
+const btn = document.getElementById("btn");
+btn.addEventListener("click", function (event) {});
+```
+
+回调函数有一个比较严重的问题，就是很容易出现回调地狱的问题。也就是实现了回调函数不断的嵌套。
+
+```js
+setTimeout(() => {
+  console.log(1);
+  setTimeout(() => {
+    console.log(2);
+    setTimeout(() => {
+      console.log(3);
+    }, 3000);
+  }, 2000);
+}, 1000);
+```
+
+以上的代码就是典型的回调地狱的问题，这样的代码是非常不利于阅读和维护的。
+
+所以在`ES6`中提供了`Promise`以及`async/await`来解决地狱回调的问题。
+
+## 15、 为什么函数被称为一等公民？
+
+JavaScript 语言将函数看作一种值，与其它值（数值、字符串、布尔值等等）地位相同。凡是可以使用值的地方，就能使用函数。比如，可以把**函数赋值给变量和对象的属性**，也可以当作**参数传入其他函数**，或者**作为函数的结果返回**。
+
+同时函数还可以作为类的构造函数，完成对象实例的创建。所以说，这种多重身份让`JavaScript`中的函数变得非常重要，所以说函数被称为一等公民。
