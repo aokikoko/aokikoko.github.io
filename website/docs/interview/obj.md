@@ -851,14 +851,14 @@ stu1.study();
 
 ```js
 function Person() {
-  this.emotion = ["吃饭", "睡觉", "学习"]; // 爱好
+  this.emotion = ["吃饭", "睡觉"]; // 爱好
 }
 function Studnet(id) {
   this.id = id; // 学号
   Person.call(this);
 }
 var stu1 = new Studnet(1001);
-console.log(stu1.emotion);
+console.log(stu1.emotion); // ["吃饭", "睡觉"]
 ```
 
 如下代码：
@@ -1114,3 +1114,979 @@ student.study();
 通过寄生式组合继承解决了组合继承的问题。
 
 同时，在以后的应用中，可以使用组合继承，也可以使用寄生式组合继承。
+
+## 7、模拟 jQuery 实现
+
+下面我们通过模拟实现一个简单的`jQuery`,来巩固原型的应用。
+
+```js
+  <script>
+      // 为jQuery起一个别名，模仿jQuery的框架
+      var $ = (jQuery = function () {});
+      // 为jQuery原型起一个别名
+      //这里没有直接赋值给fn，否则它属于window对象，容易造成全局污染
+      //后面要访问jquery的原型，可以直接通过jQuery.fn来实现
+      jQuery.fn = jQuery.prototype = {
+        version: "6.1.1", //添加原型属性，表示jquery的版本
+        //添加原型方法，表示返回jquery对象的长度
+        size: function () {
+          return this.length;
+        },
+      };
+
+    </script>
+```
+
+下面，我们使用`jQuery`原型中的`size`方法和`version`属性。
+
+```js
+// 为jQuery起一个别名，模仿jQuery的框架
+var $ = (jQuery = function () {});
+// 为jQuery原型起一个别名
+//这里没有直接赋值给fn，否则它属于window对象，容易造成全局污染
+//后面要访问jquery的原型，可以直接通过jQuery.fn来实现
+jQuery.fn = jQuery.prototype = {
+  version: "6.1.1", //添加原型属性，表示jquery的版本
+  //添加原型方法，表示返回jquery对象的长度
+  size: function () {
+    return this.length;
+  },
+};
+var jq = new $();
+console.log(jq.version); // 6.1.1
+console.log(jq.size()); // undefined
+```
+
+在上面的代码中，我们是创建了一个`jquery`的实例，然后通过该实例完成了原型属性和方法的调用。
+
+但是在`jquery`库中，是采用如下的方式进行调用。
+
+```js
+$().version;
+$().size();
+```
+
+通过以上的两行代码，我们可以看到在`jQuery`库中，并没有使用`new`操作符，而是直接使用小括号运算符完成了对`jQuery`构造函数的调用。然后后面直接访问原型成员。
+
+那应该怎样实现这种操作？
+
+我们想到的就是，在`jquery`的构造函数中，直接创建`jQuery`类的实例。
+
+```js
+// 为jQuery起一个别名，模仿jQuery的框架
+var $ = (jQuery = function () {
+  return new jQuery();
+});
+// 为jQuery原型起一个别名
+//这里没有直接赋值给fn，否则它属于window对象，容易造成全局污染
+//后面要访问jquery的原型，可以直接通过jQuery.fn来实现
+jQuery.fn = jQuery.prototype = {
+  version: "6.1.1", //添加原型属性，表示jquery的版本
+  //添加原型方法，表示返回jquery对象的长度
+  size: function () {
+    return this.length;
+  },
+};
+$().version;
+//   var jq = new $();
+//   console.log(jq.version); // 6.1.1
+//   console.log(jq.size());
+```
+
+在上面的代码中，给`jQuery`构造函数直接返回了`它的实例`，`return new jQuery();`
+
+然后获取原型对象中的`size`属性的值:`$().version`.
+
+但是，出现了如下的错误：
+
+```
+Uncaught RangeError: Maximum call stack size exceeded
+```
+
+以上错误的含义是栈内存溢出。
+
+原因就是：当我们通过`$()`调用构造函数的时候，内部有执行了`new`操作，这时，又会重新执行`jQuery`的构造函数，这样就造成了死循环。
+
+```js
+var $ = (jQuery = function () {
+  return jQuery.fn.init(); //调用原型中的`init方法`
+});
+
+jQuery.fn = jQuery.prototype = {
+  init: function () {
+    return this; //返回jquery的原型对象
+  },
+  version: "6.1.1",
+  size: function () {
+    return this.length;
+  },
+};
+console.log($().version);
+```
+
+在上面的代码中，在`jQuery`的构造方法中，调用的是原型中的`init`方法，在该方法中，返回了`jquery`的原型对象。
+
+最后进行输出:`cosnole.log($().version)`
+
+但是，以上的处理还是隐藏一个问题，具体看如下代码：
+
+```js
+var $ = (jQuery = function () {
+  return jQuery.fn.init();
+});
+jQuery.fn = jQuery.prototype = {
+  init: function () {
+    this.length = 0; //原型属性length
+    this._size = function () {
+      //原型方法
+      return this.length;
+    };
+    return this;
+  },
+  version: "6.1.1",
+  length: 1, // 原型属性
+  size: function () {
+    return this.length;
+  },
+};
+console.log($().version);
+console.log($()._size()); // 0
+console.log($().size()); // 0
+```
+
+在上面的代码中，在`init`这个原型方法中添加了`lenght`属性与`_size`方法，在该方法中打印`length`的值。
+
+```js
+var $ = (jQuery = function () {
+  return new jQuery.fn.init(); //调用原型中的`init方法`
+});
+```
+
+在`jQuery`的构造函数中，通过`new`操作符创建了一个实例对象，这样`init()`方法中的`this`指向的就是`init`方法的实例，而不是`jQuery.prototype`这个原型对象了。
+
+```js
+console.log($().version); // 返回undefined
+console.log($()._size()); // 0
+console.log($().size()); // 抛出异常：Uncaught TypeError: $(...).size is not a function
+```
+
+下面，我们来看一下怎样解决现在面临的问题。
+
+```js
+var $ = (jQuery = function () {
+  return new jQuery.fn.init(); //调用原型中的`init方法`
+});
+jQuery.fn = jQuery.prototype = {
+  init: function () {
+    this.length = 0;
+    this._size = function () {
+      return this.length;
+    };
+    return this;
+  },
+  version: "6.1.1",
+  length: 1,
+  size: function () {
+    return this.length;
+  },
+};
+// 将`jQuery`的原型对象覆盖掉init的原型对象。
+jQuery.fn.init.prototype = jQuery.fn;
+console.log($().version); //6.1.1
+console.log($()._size()); // 0
+console.log($().size()); // 0
+```
+
+在上面的代码中，我们添加了一行代码：
+
+```js
+jQuery.fn.init.prototype = jQuery.fn;
+```
+
+```js
+console.log($().version);
+```
+
+**下面，要实现的是选择器功能**
+
+`jQuery`构造函数包括两个参数，分别是`selector`和`context`,`selector`表示的是选择器，`context`表示匹配的上下文，也就是可选择的访问，一般表示的是一个`DOM`元素。这里我们只考虑标签选择器。
+
+```js
+<script>
+      // 给构造函数传递selector,context两个参数
+      var $ = (jQuery = function (selector, context) {
+        return new jQuery.fn.init(selector, context); //调用原型中的`init方法`
+      });
+      jQuery.fn = jQuery.prototype = {
+        init: function (selector, context) {
+          selector = selector || document; //初始化选择器，默认值为document
+          context = context || document; // 初始化上下文对象，默认值为document
+          if (selector.nodeType) {
+            // 如果是DOM元素
+            // 把该DOM元素赋值给实例对象
+            this[0] = selector;
+            this.length = 1; //表示包含了1个元素
+            this.context = selector; //重新设置上下文对象
+            return this; //返回当前实例
+          }
+          if (typeof selector === "string") {
+            //如果选择器是一个字符串
+            var e = context.getElementsByTagName(selector); // 获取指定名称的元素
+            //通过for循环将所有元素存储到当前的实例中
+            for (var i = 0; i < e.length; i++) {
+              this[i] = e[i];
+            }
+            this.length = e.length; //存储元素的个数
+            this.context = context; //保存上下文对象
+            return this; //返回当前的实例
+          } else {
+            this.length = 0;
+            this.context = context;
+            return this;
+          }
+          //   this.length = 0;
+          //   console.log("init==", this);
+          //   this._size = function () {
+          //     return this.length;
+          //   };
+          //   return this;
+        },
+
+        // version: "6.1.1",
+        // length: 1,
+        // size: function () {
+        //   return this.length;
+        // },
+      };
+      jQuery.fn.init.prototype = jQuery.fn;
+      window.onload = function () {
+        console.log($("div").length);
+      };
+      //   console.log($().version);
+      //   console.log($()._size()); // 0
+      //   console.log($().size()); // 0
+      //   var jq = new $();
+      //   console.log(jq.version); // 6.1.1
+      //   console.log(jq.size());
+    </script>
+    <div></div>
+    <div></div>
+  </body>
+```
+
+在上面的代码中，当页面加载完以后，这时会触发`onload`事件，在该事件对应的处理函数中，通过`$("div")`,传递的是字符串，
+
+`selector`参数表示的就是`div`这个字符串，这里没有传递`context`参数，表示的就是`document`对象。
+
+最后打印元素的个数。
+
+在使用`jQuery`库的时候，我们经常可以看到如下的操作：
+
+```js
+$("div").html();
+```
+
+以上代码的含义就是直接在`jQuery`对象上调用`html( )`方法来操作`jQuery`包含所有的`DOM`元素。
+
+`html()`方法的实现如下：
+
+```js
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+  </head>
+  <body>
+    <script>
+      // 给构造函数传递selector,context两个参数
+      var $ = (jQuery = function (selector, context) {
+        return new jQuery.fn.init(selector, context); //调用原型中的`init方法`
+      });
+      jQuery.fn = jQuery.prototype = {
+        init: function (selector, context) {
+          selector = selector || document; //初始化选择器，默认值为document
+          context = context || document; // 初始化上下文对象，默认值为document
+          if (selector.nodeType) {
+            // 如果是DOM元素
+            // 把该DOM元素赋值给实例对象
+            this[0] = selector;
+            this.length = 1; //表示包含了1个元素
+            this.context = selector; //重新设置上下文对象
+            return this; //返回当前实例
+          }
+          if (typeof selector === "string") {
+            //如果选择器是一个字符串
+            var e = context.getElementsByTagName(selector); // 获取指定名称的元素
+            //通过for循环将所有元素存储到当前的实例中
+            for (var i = 0; i < e.length; i++) {
+              this[i] = e[i];
+            }
+            this.length = e.length; //存储元素的个数
+            this.context = context; //保存上下文对象
+            return this; //返回当前的实例
+          } else {
+            this.length = 0;
+            this.context = context;
+            return this;
+          }
+          //   this.length = 0;
+          //   console.log("init==", this);
+          //   this._size = function () {
+          //     return this.length;
+          //   };
+          //   return this;
+        },
+        html: function (val) {
+          jQuery.each(
+            this,
+            function (val) {
+              this.innerHTML = val;
+            },
+            val
+          );
+        },
+
+        // version: "6.1.1",
+        // length: 1,
+        // size: function () {
+        //   return this.length;
+        // },
+      };
+      jQuery.fn.init.prototype = jQuery.fn;
+
+      //提供each扩展方法
+      jQuery.each = function (object, callback, args) {
+        //通过for循环的方式来遍历jQuery对象中的每个DOM元素。
+        for (var i = 0; i < object.length; i++) {
+          // 在每个DOM元素上调用回调函数
+          callback.call(object[i], args);
+        }
+        return object; //返回jQuery对象。
+      };
+      window.onload = function () {
+        // console.log($("div").length);
+        $("div").html("<h2>hello<h2>");
+      };
+      //   console.log($().version);
+      //   console.log($()._size()); // 0
+      //   console.log($().size()); // 0
+      //   var jq = new $();
+      //   console.log(jq.version); // 6.1.1
+      //   console.log(jq.size());
+    </script>
+    <div></div>
+    <div></div>
+  </body>
+</html>
+
+```
+
+在上面的代码中，首先添加了`jQuery.each`方法。
+
+```js
+//提供each扩展方法
+jQuery.each = function (object, callback, args) {
+  //通过for循环的方式来遍历jQuery对象中的每个DOM元素。
+  for (var i = 0; i < object.length; i++) {
+    // 在每个DOM元素上调用回调函数
+    //这里的让回调函数中的this指向了dom元素。
+    callback.call(object[i], args);
+  }
+  return object; //返回jQuery对象。
+};
+```
+
+在上面的代码中，通过`for`循环遍历`jQuery`对象中的每个`DOM`元素。然后执行回调函数`callback`
+
+在`jQuery`的原型对象上，添加`html`方法
+
+```js
+  html: function (val) {
+          jQuery.each(
+            this, //表示jQuery原型对象
+            function (val) {
+                //this表示的是dom元素，这里是div元素
+              this.innerHTML = val;
+            },
+            val //表示传递过来的`<h2>hello<h2>`
+          );
+        },
+```
+
+在`html`方法中完成对`jQuery.each`方法的调用。
+
+`window.onload`的方法修改成如下的形式：
+
+```js
+window.onload = function () {
+  // console.log($("div").length);
+  $("div").html("<h2>hello<h2>");
+};
+```
+
+## \*\*下面我们实现`jQuery`的扩展功能
+
+jQuery 提供了良好的扩展接口，方便用户自定义 jQuery 方法。根据设计习惯，如果为 jQuery 或者 jQuery.prototype 新增方法时，我们可以直接通过点语法来实现，例如上面我们扩展的`html`方法，或者在 jQuery.prototype 对象结构内增加。但是，如果分析 jQuery 源码，会发现它是通过 extend() 函数来实现功能扩展的。
+
+通过`extend()`方法来实现扩展的好处是：方便用户快速的扩展`jQuery`功能，但不会破坏`jQuery`框架的结构。如果直接在`jQuery`源码中添加方法，这样就破坏了`Jquery`框架的结构，不方便后期的代码维护。
+
+如果后期不需要某个功能，可以直接使用`Jquery`提供的方法删除，而不需要从源码中在对该功能进行删除。
+
+extend() 函数的功能很简单，它只是把指定对象的方法复制给` jQuery` 对象或者 `jQuery.prototype`。
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+  </head>
+  <body>
+    <script>
+      // 给构造函数传递selector,context两个参数
+      var $ = (jQuery = function (selector, context) {
+        return new jQuery.fn.init(selector, context); //调用原型中的`init方法`
+      });
+      jQuery.fn = jQuery.prototype = {
+        init: function (selector, context) {
+          selector = selector || document; //初始化选择器，默认值为document
+          context = context || document; // 初始化上下文对象，默认值为document
+          if (selector.nodeType) {
+            // 如果是DOM元素
+            // 把该DOM元素赋值给实例对象
+            this[0] = selector;
+            this.length = 1; //表示包含了1个元素
+            this.context = selector; //重新设置上下文对象
+            return this; //返回当前实例
+          }
+          if (typeof selector === "string") {
+            //如果选择器是一个字符串
+            var e = context.getElementsByTagName(selector); // 获取指定名称的元素
+            //通过for循环将所有元素存储到当前的实例中
+            for (var i = 0; i < e.length; i++) {
+              this[i] = e[i];
+            }
+            this.length = e.length; //存储元素的个数
+            this.context = context; //保存上下文对象
+            return this; //返回当前的实例
+          } else {
+            this.length = 0;
+            this.context = context;
+            return this;
+          }
+          //   this.length = 0;
+          //   console.log("init==", this);
+          //   this._size = function () {
+          //     return this.length;
+          //   };
+          //   return this;
+        },
+        // html: function (val) {
+        //   jQuery.each(
+        //     this,
+        //     function (val) {
+        //       this.innerHTML = val;
+        //     },
+        //     val
+        //   );
+        // },
+
+        // version: "6.1.1",
+        // length: 1,
+        // size: function () {
+        //   return this.length;
+        // },
+      };
+      jQuery.fn.init.prototype = jQuery.fn;
+
+      //提供each扩展方法
+      jQuery.each = function (object, callback, args) {
+        //通过for循环的方式来遍历jQuery对象中的每个DOM元素。
+        for (var i = 0; i < object.length; i++) {
+          // 在每个DOM元素上调用回调函数
+          callback.call(object[i], args);
+        }
+        return object; //返回jQuery对象。
+      };
+
+      jQuery.extend = jQuery.fn.extend = function (obj) {
+        for (var prop in obj) {
+          this[prop] = obj[prop];
+        }
+        return this;
+      };
+      jQuery.fn.extend({
+        html: function (val) {
+          jQuery.each(
+            this,
+            function (val) {
+              this.innerHTML = val;
+            },
+            val
+          );
+        },
+      });
+      window.onload = function () {
+        // console.log($("div").length);
+        $("div").html("<h2>hello<h2>");
+      };
+      //   console.log($().version);
+      //   console.log($()._size()); // 0
+      //   console.log($().size()); // 0
+      //   var jq = new $();
+      //   console.log(jq.version); // 6.1.1
+      //   console.log(jq.size());
+    </script>
+    <div></div>
+    <div></div>
+  </body>
+</html>
+```
+
+在上面的代码中，我们为`jQuery`的原型对象添加了`extend`方法
+
+```js
+jQuery.extend = jQuery.fn.extend = function (obj) {
+  for (var prop in obj) {
+    this[prop] = obj[prop];
+  }
+  return this;
+};
+```
+
+把`obj`对象中的属性添加到`jQuery`原型对象上。
+
+下面调用`extend`方法，同时设置`html`属性
+
+```js
+jQuery.fn.extend({
+  html: function (val) {
+    jQuery.each(
+      this,
+      function (val) {
+        this.innerHTML = val;
+      },
+      val
+    );
+  },
+});
+```
+
+这样`jQuery`原型对象上就有了`html`方法。
+
+而把原来的`html`方法的代码注释掉。
+
+刷新浏览器，查看对应的效果。
+
+**参数传递**
+
+我们在使用`jquery`的方法的时候，需要进行参数的传递，而且一般都要求传递的参数都是对象。
+
+使用对象作为参数进行传递的好处，就是方便参数的管理，例如参数个数不受限制。
+
+如果使用对象作为参数进行传递，需要解决的问题：如何解决并提取参数，如何处理默认值等问题。
+
+```js
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+  </head>
+  <body>
+    <script>
+      // 给构造函数传递selector,context两个参数
+      var $ = (jQuery = function (selector, context) {
+        return new jQuery.fn.init(selector, context); //调用原型中的`init方法`
+      });
+      jQuery.fn = jQuery.prototype = {
+        init: function (selector, context) {
+          selector = selector || document; //初始化选择器，默认值为document
+          context = context || document; // 初始化上下文对象，默认值为document
+          if (selector.nodeType) {
+            // 如果是DOM元素
+            // 把该DOM元素赋值给实例对象
+            this[0] = selector;
+            this.length = 1; //表示包含了1个元素
+            this.context = selector; //重新设置上下文对象
+            return this; //返回当前实例
+          }
+          if (typeof selector === "string") {
+            //如果选择器是一个字符串
+            var e = context.getElementsByTagName(selector); // 获取指定名称的元素
+            //通过for循环将所有元素存储到当前的实例中
+            for (var i = 0; i < e.length; i++) {
+              this[i] = e[i];
+            }
+            this.length = e.length; //存储元素的个数
+            this.context = context; //保存上下文对象
+            return this; //返回当前的实例
+          } else {
+            this.length = 0;
+            this.context = context;
+            return this;
+          }
+          //   this.length = 0;
+          //   console.log("init==", this);
+          //   this._size = function () {
+          //     return this.length;
+          //   };
+          //   return this;
+        },
+        // html: function (val) {
+        //   jQuery.each(
+        //     this,
+        //     function (val) {
+        //       this.innerHTML = val;
+        //     },
+        //     val
+        //   );
+        // },
+
+        // version: "6.1.1",
+        // length: 1,
+        // size: function () {
+        //   return this.length;
+        // },
+      };
+      jQuery.fn.init.prototype = jQuery.fn;
+
+      //提供each扩展方法
+      jQuery.each = function (object, callback, args) {
+        console.log("args=", args);
+        //通过for循环的方式来遍历jQuery对象中的每个DOM元素。
+        for (var i = 0; i < object.length; i++) {
+          // 在每个DOM元素上调用回调函数
+          callback.call(object[i], args);
+        }
+
+        return object; //返回jQuery对象。
+      };
+
+      // jQuery.extend = jQuery.fn.extend = function (obj) {
+      //   for (var prop in obj) {
+      //     this[prop] = obj[prop];
+      //   }
+      //   return this;
+      // };
+      jQuery.extend = jQuery.fn.extend = function () {
+        var destination = arguments[0],
+          source = arguments[1];
+        //如果存在两个参数，并且都是对象
+        if (typeof destination === "object" && typeof source === "object") {
+          //把第二个对象合并到第一个参数对象中，并返回合并后的对象
+          for (var property in source) {
+            destination[property] = source[property];
+          }
+          return destination;
+        } else {
+          for (var prop in destination) {
+            this[prop] = destination[prop];
+          }
+          return this;
+        }
+      };
+      jQuery.fn.extend({
+        html: function (val) {
+          jQuery.each(
+            this,
+            function (val) {
+              this.innerHTML = val;
+            },
+            val
+          );
+        },
+      });
+      jQuery.fn.extend({
+        fontStyle: function (obj) {
+          var defaults = {
+            color: "#ccc",
+            size: "16px",
+          };
+          //如果有参数，会覆盖掉默认的参数
+          defaults = jQuery.extend(defaults, obj || {});
+          //为每个DOM元素执设置样式.
+          jQuery.each(this, function () {
+            this.style.color = defaults.color;
+            this.style.fontSize = defaults.size;
+          });
+        },
+      });
+      window.onload = function () {
+        // console.log($("div").length);
+        $("div").html("<h2>hello<h2>");
+        $("p").fontStyle({
+          color: "red",
+          size: "30px",
+        });
+      };
+      //   console.log($().version);
+      //   console.log($()._size()); // 0
+      //   console.log($().size()); // 0
+      //   var jq = new $();
+      //   console.log(jq.version); // 6.1.1
+      //   console.log(jq.size());
+    </script>
+    <div></div>
+    <div></div>
+    <p>学习前端</p>
+    <p>学习前端</p>
+  </body>
+</html>
+
+```
+
+在上面的代码中，重新改造`extend`方法。
+
+```js
+jQuery.extend = jQuery.fn.extend = function () {
+  var destination = arguments[0],
+    source = arguments[1];
+  //如果存在两个参数，并且都是对象
+  if (typeof destination === "object" && typeof source === "object") {
+    //把第二个对象合并到第一个参数对象中，并返回合并后的对象
+    for (var property in source) {
+      destination[property] = source[property];
+    }
+    return destination;
+  } else {
+    for (var prop in destination) {
+      this[prop] = destination[prop];
+    }
+    return this;
+  }
+};
+```
+
+在`extend`方法中，首先获取两个参数，然后判断这两个参数是否都是对象，如果都是对象，把第二个参数对象合并到第一个参数对象中，并返回合并后的对象。
+
+否则，将第一个参数对象复制到`jquery`的原型对象上。
+
+```js
+jQuery.fn.extend({
+  fontStyle: function (obj) {
+    var defaults = {
+      color: "#ccc",
+      size: "16px",
+    };
+    //如果有参数，会覆盖掉默认的参数
+    defaults = jQuery.extend(defaults, obj || {});
+    // console.log("this==", this);//init {0: p, 1: p, length: 2, context: document}
+    //为每个DOM元素执设置样式.
+    jQuery.each(this, function () {
+      //这里的this表示的是p标签，因为在each方法内部通过call改变了this指向，让this指向了每个遍历得到的p元素
+      this.style.color = defaults.color;
+      this.style.fontSize = defaults.size;
+    });
+  },
+});
+```
+
+在上面的代码中， 调用了`extend`方法，然后传递了`fontStyle`,这个`fontStyle`可以用来设置文本的颜色与字体大小。
+
+当我们第一次调用`extend`方法的时候，只是传递了`fontStyle`这个对象，这时，会将该对象添加到`jQuery`原型对象上。
+
+```js
+    window.onload = function () {
+        // console.log($("div").length);
+        $("div").html("<h2>hello<h2>");
+        $("p").fontStyle({
+          color: "red",
+          size: "30px",
+        });
+      };
+
+ <div></div>
+    <div></div>
+    <p>学习前端</p>
+    <p>学习前端</p>
+```
+
+在`onload`事件中，调用`fontStyle`方法，并且传递了一个对象，这时在`fontStyle`方法的内部，首先会创建一个`defaults`默认的对象，然后再次调用`extend`方法，将传递的对象合并到默认对象上，当然完成了值的覆盖。
+
+下面调用`each`方法，在`each`方法中遍历每个元素，执行回调函数，并且改变`this`的指向。
+
+**封装成独立的命名空间**
+
+以上已经实现了一个简单的`jQuery`库，
+
+但是这里还有一个问题，需要解决：当编写了大量的`javascript`代码以后，引入该`jquery`库就很容易出现代码冲突的问题，所以这里需要将`jquery`库的代码与其他的`javascript`代码进行隔离，这里使用闭包。
+
+```js
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+  </head>
+  <body>
+    <script>
+      (function (window) {
+        // 给构造函数传递selector,context两个参数
+        var $ = (jQuery = function (selector, context) {
+          return new jQuery.fn.init(selector, context); //调用原型中的`init方法`
+        });
+        jQuery.fn = jQuery.prototype = {
+          init: function (selector, context) {
+            selector = selector || document; //初始化选择器，默认值为document
+            context = context || document; // 初始化上下文对象，默认值为document
+            if (selector.nodeType) {
+              // 如果是DOM元素
+              // 把该DOM元素赋值给实例对象
+              this[0] = selector;
+              this.length = 1; //表示包含了1个元素
+              this.context = selector; //重新设置上下文对象
+              return this; //返回当前实例
+            }
+            if (typeof selector === "string") {
+              //如果选择器是一个字符串
+              var e = context.getElementsByTagName(selector); // 获取指定名称的元素
+              //通过for循环将所有元素存储到当前的实例中
+              for (var i = 0; i < e.length; i++) {
+                this[i] = e[i];
+              }
+              this.length = e.length; //存储元素的个数
+              this.context = context; //保存上下文对象
+              return this; //返回当前的实例
+            } else {
+              this.length = 0;
+              this.context = context;
+              return this;
+            }
+            //   this.length = 0;
+            //   console.log("init==", this);
+            //   this._size = function () {
+            //     return this.length;
+            //   };
+            //   return this;
+          },
+          // html: function (val) {
+          //   jQuery.each(
+          //     this,
+          //     function (val) {
+          //       this.innerHTML = val;
+          //     },
+          //     val
+          //   );
+          // },
+
+          // version: "6.1.1",
+          // length: 1,
+          // size: function () {
+          //   return this.length;
+          // },
+        };
+        jQuery.fn.init.prototype = jQuery.fn;
+
+        //提供each扩展方法
+        jQuery.each = function (object, callback, args) {
+          //通过for循环的方式来遍历jQuery对象中的每个DOM元素。
+          for (var i = 0; i < object.length; i++) {
+            // 在每个DOM元素上调用回调函数
+            callback.call(object[i], args);
+          }
+
+          return object; //返回jQuery对象。
+        };
+
+        // jQuery.extend = jQuery.fn.extend = function (obj) {
+        //   for (var prop in obj) {
+        //     this[prop] = obj[prop];
+        //   }
+        //   return this;
+        // };
+        jQuery.extend = jQuery.fn.extend = function () {
+          var destination = arguments[0],
+            source = arguments[1];
+          //如果存在两个参数，并且都是对象
+          if (typeof destination === "object" && typeof source === "object") {
+            //把第二个对象合并到第一个参数对象中，并返回合并后的对象
+            for (var property in source) {
+              destination[property] = source[property];
+            }
+            return destination;
+          } else {
+            for (var prop in destination) {
+              this[prop] = destination[prop];
+            }
+            return this;
+          }
+        };
+        // 开发jqueyr
+        window.jQuery = window.$ = jQuery;
+      })(window);
+
+      jQuery.fn.extend({
+        html: function (val) {
+          jQuery.each(
+            this,
+            function (val) {
+              this.innerHTML = val;
+            },
+            val
+          );
+        },
+      });
+      jQuery.fn.extend({
+        fontStyle: function (obj) {
+          var defaults = {
+            color: "#ccc",
+            size: "16px",
+          };
+          //如果有参数，会覆盖掉默认的参数
+          defaults = jQuery.extend(defaults, obj || {});
+
+          // console.log("this==", this);//init {0: p, 1: p, length: 2, context: document}
+          //为每个DOM元素执设置样式.
+          jQuery.each(this, function () {
+            //这里的this表示的是p标签，因为在each方法内部通过call改变了this指向，让this指向了每个遍历得到的p元素
+
+            this.style.color = defaults.color;
+            this.style.fontSize = defaults.size;
+          });
+        },
+      });
+      window.onload = function () {
+        // console.log($("div").length);
+        $("div").html("<h2>hello<h2>");
+        $("p").fontStyle({
+          color: "red",
+          size: "30px",
+        });
+      };
+      //   console.log($().version);
+      //   console.log($()._size()); // 0
+      //   console.log($().size()); // 0
+      //   var jq = new $();
+      //   console.log(jq.version); // 6.1.1
+      //   console.log(jq.size());
+    </script>
+    <div></div>
+    <div></div>
+    <p>学习前端</p>
+    <p>学习前端</p>
+  </body>
+</html>
+
+```
+
+在上面的代码中，将`jQuery`库放在匿名函数中，然后进行自调用，并且传入`window`对象。
+
+在上面所添加的代码中还要注意如下语句：
+
+```js
+window.jQuery = window.$ = jQuery;
+```
+
+以上语句的作用：把闭包中的私有变量`jQuery`传递给`window`对象的`jQuery`属性。这样就可以在全局作用域中通过`jQuery`变量来访问闭包体内的`jQuery`框架了。
+
+以上就是我们模拟的`jQuery`库。
