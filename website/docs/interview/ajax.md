@@ -340,3 +340,123 @@ app.all("*", function (req, res) {
 后面请求头信息可以根据情况进行选择设置，例如接收请求的方法，数据传输的格式等。
 
 通过对服务端的处理不会对前端代码做任何的处理，但是由于不同系统服务端采用的语言与框架是不同的，所以导致服务端的处理方式不同。
+
+## 11、JSONP
+
+`JSONP`是客户端与服务端进行跨域通信比较常用的解决办法，它的特点是简单，兼容老式浏览器，并且对服务器影响小。
+
+`JSONP`的实现的实现思想可以分为两步：
+
+第一：在网页中动态添加一个`script`标签，通过`script`标签向服务器发送请求，在请求中会携带一个请求的`callback`回调函数名。
+
+第二: 服务器在接收到请求后，会进行相应处理，然后将参数放在`callback`回调函数中对应的位置，并将`callback`回调函数通过`json`格式进行返回。
+
+前端代码：
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <script>
+      window.onload = function () {
+        var btn = document.getElementById("btnLogin");
+        btn.addEventListener("click", function () {
+          sendRequest();
+        });
+      };
+      function sendRequest() {
+        var userName = document.getElementById("userName").value;
+        //请求参数，其中包含回调函数
+        var param = "name=" + userName + "&callback=successFn";
+        //请求的url
+        var url = "http://localhost:3000/getUserNameInfo?" + param;
+        var script = document.createElement("script");
+        script.src = url;
+        document.body.appendChild(script);
+      }
+      function successFn(result) {
+        console.log("result=", result);
+      }
+      //   function sendRequest() {
+      //     var userName = document.getElementById("userName").value;
+      //     //这里为了简单，暂时不考虑浏览器兼容性问题
+      //     var xhr = new XMLHttpRequest();
+      //     let url = "http://localhost:3000/getUserNameInfo?name=" + userName;
+      //     xhr.open("get", url, true);
+      //     xhr.send();
+      //     xhr.onreadystatechange = function () {
+      //       if (xhr.readyState === 4 && xhr.status === 200) {
+      //         console.log(xhr.responseText);
+      //       }
+      //     };
+      //   }
+    </script>
+  </head>
+  <body>
+    用户名:<input type="text" id="userName" /> <br />
+    <button id="btnLogin">登录</button>
+  </body>
+</html>
+```
+
+在上面的代码中，我们重新改造了`sendRequest`方法，在该方法中构建了`param`参数，该参数的内容包括了用户输入的用户名以及回调函数名。下面构建好所要请求的服务端的`url`地址，将该`url`地址交给`script`标签的`src`属性，通过该属性向服务器发送请求。
+
+同时定义回调函数`successFn`,接收服务端返回的数据。可以对服务端返回的数据做进一步的处理。
+
+这里需要注意的一点就是：回调函数必须设置为全局的函数。因为服务端返回响应后，会在全局环境下查找回调函数。
+
+下面看一下服务端的处理：
+
+```js
+var express = require("express");
+var app = express();
+// app.all('*', function (req, res) {
+//     //设置可以接收请求的域名
+//     res.header('Access-Control-Allow-Origin', 'http://127.0.0.1:5500');
+//     res.header('Access-Control-Allow-Methods', 'GET, POST,PUT');
+//     res.header('Access-Control-Allow-Headers', 'Content-Type');
+//     res.header('Content-Type', 'application/json;charset=utf-8');
+//     req.next();
+// })
+app.get("/getUserNameInfo", function (req, res) {
+  var userName = req.query.name;
+  //获取请求的回调函数
+  var callbackFn = req.query.callback;
+  console.log("callbackFn==", callbackFn);
+  console.log("userName=", userName);
+  var result = {
+    id: 10001,
+    userName: userName,
+    userAge: 21,
+  };
+  var data = JSON.stringify(result);
+  res.writeHead(200, { "Content-type": "application/json" });
+  //返回值是对对回调函数的调用
+  res.write(callbackFn + "(" + data + ")");
+  // res.write(data);
+  res.end();
+});
+app.listen(3000, function () {
+  console.log("服务端启动....");
+});
+```
+
+在服务的代码中，需要接收回调函数的名称。
+
+同时返回的内容中，包含了回调函数的名称，以及传递给该回调函数的具体数据。
+
+这样当回调函数返回给浏览器后，浏览器可以从全局的环境中查找该回调函数，并进行执行。
+
+使用`JSONP`的优点与缺点：
+
+优点：
+
+简单，不存在浏览器兼容性的问题
+
+缺点：
+
+只能实现`get`请求，如果是`post`请求则无法进行跨域的处理。
