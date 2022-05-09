@@ -703,9 +703,9 @@ console.log(proxy.userage);
   person.age = 18
 ```
 
-### Vue3的响应式原理是通过Proxy来完成的
+### Vue3 的响应式原理是通过 Proxy 来完成的
 
-在文本框中输入内容会在p标签中展示
+在文本框中输入内容会在 p 标签中展示
 
 ```js
 1. 先找到文本框还有p标签
@@ -715,7 +715,118 @@ console.log(proxy.userage);
 <script>
   let input = document.getElementById('txtInput');
   let p = document.getElementById('txtP');
-
-  input.addEventListener
+  let obj = {
+    text: ''
+  }
+  let newObj = new Proxy(obj, {
+    set: function(target, key, value) {
+      if (target.hasOwnProperty(key)) {
+        p.innerHTML = value
+        input.value = value;
+      }
+    }
+  })
+  input.addEventListener('keyup', function(e) {
+    newObj.text = e.target.value
+  })
 </script>
+```
+
+### Proxy 应用场景三: 实现私有属性
+
+```js
+传统定义私有属性的方式;
+const userInfo = {
+  _id: 123,
+  getAllUsers: function () {
+    console.log("获取所有用户的信息");
+  },
+  getUserById: function (userId) {
+    console.log("根据用户的编号, 查询指定的信息" + userId);
+  },
+  saveUser: function (userId) {
+    console.log("保存用户信息");
+  },
+};
+```
+
+```js
+使用Proxy
+
+const proxy = new Proxy(userInfo, {
+  get: function (target, prop) {
+    if (prop[0] === '_') {
+      return undefined;
+    }
+    return target[prop];
+  },
+  set: function (target, prop, value) {
+    if (prop[0] !== '_') {
+      target[prop] value;
+    }
+  }
+})
+```
+
+## Set
+
+Set 结构与数组非常类似, 是类数组, 并不是真数组, 但是 Set 结构成员的值必须是唯一的, 也就是没有重复值
+
+```js
+// 添加值
+let s = new Set();
+s.add(1);
+s.add(2);
+s.add(3);
+s.add(3);
+
+console.log(s); // Set(3) { 1, 2, 3 }
+console.log(s.size); // 3
+
+// 删除值
+console.log(s.delete(3);)  // true
+s.clear()
+
+// 查询
+console.log(s.has(3);)  //false
+```
+
+如何转换成数组
+
+```js
+let array = Array.from(s);
+```
+
+### 利用 set 数组去重
+
+```js
+let arr = [1, 1, 2, 3, 4, 5, 6];
+
+let s = new Set(arr);
+console.log(Array.from(s));
+```
+
+## Generator
+
+也称为生成器函数, 或者叫迭代器函数. 可以通过 for of 来遍历 generator 函数, 而且 generator 函数提供了异步编程的解决方案.
+
+生成器函数和普通函数不一样, 普通函数一旦调用就会执行, 而 generator 函数在中间可以暂停
+
+```js
+// 创建generator函数
+function* go() {}
+
+// 如何划分generator的执行阶段
+function* go() {
+  console.log(1);
+  let a = yield "a";
+  console.log(2);
+  let b = yield a;
+  console.log(3);
+  return b;
+}
+// 调用generator函数
+let it = go();
+let result = it.next();
+console.log(result);
 ```
