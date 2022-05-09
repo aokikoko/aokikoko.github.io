@@ -394,3 +394,328 @@ let p = new Person("lisi");
 
 p.sayHello(); // undefined
 ```
+
+## Object.assign 浅拷贝
+
+```js
+// 将obj1和obj2的属性都给obj3
+
+let obj1 = {
+  name: "zs",
+};
+let obj2 = {
+  age: 18,
+};
+let obj3 = {};
+
+for (let key in obj1) {
+  obj3[key] = obj1[key];
+}
+for (let key in obj2) {
+  obj3[key] = obj2[key];
+}
+console.log(obj3);
+```
+
+这种方式比较繁琐, 使用 Object.assign
+
+```js
+let target = {
+  a: 1,
+  b: 2,
+}
+
+let source = {
+  c: 3,
+  d: 4,
+}
+
+let source1 = {
+  e: 5,
+  f: 6,
+}
+
+
+Object.assign(target, source, source1 ...)  // 把target之后的所有对象都拷贝给目标对象target
+console.log(target)
+```
+
+:::tip
+注意 Object.assign 是浅拷贝
+:::
+
+```js
+let obj1 = {
+  name: "zs",
+  address: {
+    city: "北京",
+  },
+};
+
+let obj2 = {};
+
+Object.assign(obj2, obj1);
+obj2.address.city = "shanghai";
+```
+
+## Object.assign 的注意事项
+
+1. 如果目标对象与源对象有同名属性, 那么后面的属性会覆盖前面的属性
+
+```js
+let target = {
+  a: 1,
+  b: 2,
+};
+
+let source = {
+  b: 3,
+  d: 4,
+};
+
+Object.assign(target, source);
+console.log(target); // { a: 1, b: 3, d: 4 }
+```
+
+2. 不可枚举的属性不会被复制
+
+```js
+let obj = {};
+
+Object.defineProperty(obj, "b", {
+  enumerable: false,
+  value: "hello",
+});
+
+let obj1 = {
+  a: "world",
+};
+
+Object.assign(obj1, obj);
+console.log(obj1); // { a: 'world' }  b属性是不可枚举的, 所以没有被复制
+```
+
+## Symbol
+
+js 中可以创建对象, 并且在对象中可以指定属性
+
+```js
+let obj = {
+  num: 10,
+};
+```
+
+但是属性名可能造成冲突
+
+比如用了别人提供好的对象, 但是又想为这个对象中添加新的属性或方法, 新添加的属性或方法名可能与原有属性或方法名字冲突
+
+如何保证名字是唯一的, 就可以防止冲突问题, 这就是 Symbol 的目的之一
+
+Symbol 这个类型可以通过 Symbol 函数去生成 , 他的值是独一无二的, 可以保证属性名唯一性
+
+```js
+let s = Symbol();
+let s1 = Symbol();
+
+console.log(typeof s); // symbol
+console.log(s); // symbol()
+console.log(s1); // symbol()
+```
+
+```js
+let s = Symbol("s"); // symbol(s)
+let s1 = Symbol("s1"); // symbol(s1)
+```
+
+```js
+let s = Symbol("s"); // symbol(s)
+let s1 = Symbol("s1"); // symbol(s1)
+console.log(s === s1); // false
+```
+
+### Symbol 应用场景
+
+如何使用 Symbol 作为属性名
+
+方式一:
+
+```js
+let obj = {};
+let mySymbol = Symbol();
+obj[mySymbol] = "hello";
+console.log(obj[mySymbol]); // hello
+```
+
+方式二:
+
+```js
+let mySymbol = Symbol();
+let obj = {
+  [mySymbol]: "hello",
+};
+
+console.log(obj[mySymbol]); // hello
+```
+
+如何防止冲突
+
+```js
+let obj = {
+  name: "zs",
+  age: 18,
+};
+
+function test1(obj) {
+  obj.id = 21;
+}
+function test2(obj) {
+  obj.id = 22;
+}
+test1(obj);
+test2(obj);
+console.log(obj); //{ name: 'zs', age: 18, id: 22 }
+// 此时属性名相同的值被覆盖了
+```
+
+```js
+// 使用Symbol来解决
+
+let obj = {
+  name: "zs",
+  age: 18,
+};
+let mySymbol = Symbol("b1");
+function test1(obj) {
+  obj[mySymbol] = 21;
+}
+let mySymbol2 = Symbol("b2");
+function test2(obj) {
+  obj[mySymbol2] = 22;
+}
+test1(obj);
+test2(obj);
+console.log(obj); // { name: 'zs', age: 18, [Symbol(b1)]: 21, [Symbol(b2)]: 22 }
+```
+
+## Proxy
+
+可以理解为在我们所访问的对象前加了一个拦截层, 当我们去访问某个对象的时候必须先通过这个拦截层
+
+```js
+let proxy = new Proxy(target, handler); // target表示要拦截的目标对象, handler表示要拦截的行为和规则, 也是对象
+```
+
+```js
+// get(); // 来拦截属性读取的操作, 比如当对对象当中某个属性进行访问的时候, 执行这个get方法
+
+let Student = {
+  username: "zs",
+};
+console.log(Student.username); // 'zs'
+console.log(Student.userage); // undefined
+```
+
+但我们不希望看到 undefined, 希望的是当我们访问 Student 中的 userage 属性的时候, 如果不存在就抛出提示, 就需要用到拦截器
+
+```js
+let proxy = new Proxy(Student, {
+  get: function (target, property) {
+    if (property in target) {
+      return target[property];
+    } else {
+      throw new Error("访问的属性" + property + "不存在");
+    }
+  },
+});
+console.log(proxy.username);
+console.log(proxy.userage);
+```
+
+注意我们这里操作的是 proxy 对象
+
+```js
+let proxy = new Proxy(Student, {
+  get: function (target, property) {
+    if (property in target) {
+      return target[property];
+    } else {
+      throw new Error("访问的属性" + property + "不存在");
+    }
+  },
+  set: function (obj, prop, value) {
+    console.log(obj);
+    console.log(prop);
+    console.log(value);
+    if (prop === "userage") {
+      if (!Number.isInteger(value)) {
+        throw new Error("年龄必须是整数");
+      }
+      if (value > 60) {
+        throw new Error("年龄超出范围");
+      }
+    }
+  },
+});
+proxy.userage = 80;
+console.log(proxy.userage);
+```
+
+### Proxy 应用场景一: 数据校验
+
+```js
+  class Person {
+    constructor () {
+      this.name = '';
+      this.age = 19;
+      return validator(this, personValidators)
+    }
+  }
+  const personValidators = {
+    name(val) {
+      return typeof val === 'string''
+    },
+    age(val) {
+      return typeof val === 'number' && val > 18;
+    }
+  }
+  function validator(target, validator) {
+    // 需要返回proxy对象, 而Person构造函数返回的是validator函数, 所以通过Person创建出来的对象
+    // 也就是Person类创建出来的对象后续在使用的时候使用的都是proxy对象
+
+    return new Proxy(target, {  // 这里实际就是this, 也就是Person
+      _validator: validator,
+      set(target, key, value) {
+        if (target.hasOwnProperty(key)) {
+          let v = this._validator[key]
+          if (v(value)) {
+            return Reflect.set(target, key, value);
+          } else {
+            throw new Error(`不能给${key}属性设置${value}`)
+          }
+        } else {
+          throw new Error(`${key}属性不存在`)
+        }
+      }
+    })
+  }
+  let person = new Person();
+  person.name = 'zhangsan';
+  person.age = 18
+```
+
+### Vue3的响应式原理是通过Proxy来完成的
+
+在文本框中输入内容会在p标签中展示
+
+```js
+1. 先找到文本框还有p标签
+2. 文本框中添加keyUp事件, 把获取的数据交给对象中的属性, 再把该属性取出来交给p标签
+<input type="text" id="txtInput" />
+<p id="txtP"></p>
+<script>
+  let input = document.getElementById('txtInput');
+  let p = document.getElementById('txtP');
+
+  input.addEventListener
+</script>
+```
