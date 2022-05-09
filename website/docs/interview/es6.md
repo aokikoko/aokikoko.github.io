@@ -827,6 +827,14 @@ function* go() {
 }
 // 调用generator函数
 let it = go();
-let result = it.next();
-console.log(result);
+let result1 = it.next();
+console.log(result1); // 1
+                     // { value: 'a', done: false }
+let result2 = it.next('b的值');
+console.log(result2); // 2
+                      // { value: 'b的值', done: false }
+let result3 = it.next();
+
+console.log(result3); // 3
+                      // { value: undefined, done: true }
 ```
