@@ -829,12 +829,77 @@ function* go() {
 let it = go();
 let result1 = it.next();
 console.log(result1); // 1
-                     // { value: 'a', done: false }
-let result2 = it.next('b的值');
+// { value: 'a', done: false }
+let result2 = it.next("b的值");
 console.log(result2); // 2
-                      // { value: 'b的值', done: false }
+// { value: 'b的值', done: false }
 let result3 = it.next();
 
 console.log(result3); // 3
-                      // { value: undefined, done: true }
+// { value: undefined, done: true }
 ```
+
+## Promise
+
+Promise 就是一个对象, 而 Promise 对象代表一个异步任务, 也就是需要长时间执行的任务. 也就是说通过 promise 对象可以将异步操作使用同步操作的方式表达出来, 避免了层层嵌套的回调函数的问题, 也就是回调地狱的问题
+
+```js
+// 在进行异步处理的时候, 如果成功了就使用resolve函数来进行处理, 如果失败了就使用reject函数来进行处理
+let promise = new Promise(function (resolve, reject) {
+  setTimeout(function () {
+    let num = Math.random();
+    if (num > 0.3) {
+      resolve("成功"); // resolve()函数的参数就是成功的返回值, 所以'成功'这个字符串就会被返回
+    } else {
+      reject("失败");
+    }
+  }, 3000);
+});
+
+// 不管成功或者失败, 我们如何去获取值, 就用到then方法来处理异步操作返回的结果. then函数的参数有两个函数, 分别处理成功和失败
+promise.then(
+  function (value) {
+    console.log(value);
+  },
+  function (errReason) {
+    console.log(errReason);
+  }
+);
+```
+
+### Promise 封装 ajax 操作
+
+```js
+let getJson = function (url) {
+  let p = new Promise(function (resolve, reject) {
+    let xhr = new XMLHttpRequest();
+    xhr.open("GET", url);
+    xhr.onreadystatechange = handler;
+    xhr.responseType = "json";
+    xhr.setRequestHeader("Accept", "application/json");
+    xhr.send();
+    function handler() {
+      if (xhr.readyState === 4) {
+        if (xhr.status === 200) {
+          resolve(this.response);
+        } else {
+          reject(new Error(this.statusText));
+        }
+      }
+    }
+  });
+  return p;
+};
+getJson("http://127.0.0.1:5500").then(
+  function (result) {
+    console.log(result);
+  },
+  function (err) {
+    console.log("出错了");
+  }
+);
+
+// 调用getJson就拿到了promise对象, promise对象中通过xml发送异步请求, 如果成功就resolve, 结果交给then里第一个回调函数
+```
+
+### Promise 常见误区
