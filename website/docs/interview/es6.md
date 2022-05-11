@@ -1128,3 +1128,20 @@ function MyPromise(task) {
 }
 let myPromise = new MyPromise(function (resolve, reject) {});
 ```
+
+2. 异常处理
+
+```js
+function MyPromise(task) {
+  let that = this;
+  that.status = "Pending";
+  function resolve() {}
+  function reject() {}
+  try {
+    task(resolve, reject);
+  } catch (e) {
+    reject(e)
+  }
+}
+let myPromise = new MyPromise(function (resolve, reject) {});
+```
