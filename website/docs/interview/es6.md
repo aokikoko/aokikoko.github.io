@@ -829,12 +829,87 @@ function* go() {
 let it = go();
 let result1 = it.next();
 console.log(result1); // 1
-                     // { value: 'a', done: false }
-let result2 = it.next('b的值');
+// { value: 'a', done: false }
+let result2 = it.next("b的值");
 console.log(result2); // 2
-                      // { value: 'b的值', done: false }
+// { value: 'b的值', done: false }
 let result3 = it.next();
 
 console.log(result3); // 3
-                      // { value: undefined, done: true }
+// { value: undefined, done: true }
+```
+
+### generator 面试题
+
+```js
+function* test(num) {
+  let x = 3 * (yield num + 1);
+  let y = yield x / 3;
+  return x + y + num;
+}
+
+let n = test(6);
+console.log(n.next());
+console.log(n.next());
+console.log(n.next());
+
+// 第一个console里输出{done: false, value: 7}, 因为执行next后, 碰到yield暂停, 并且把结果 6 + 1 返回
+// 第二次调用next函数时, 接着yield往下走, 但是第二次调用时, 并没有传递任何参数, 所以对应的 let y = yield x / 3 中的 x 是undefined, 所以输出NaN
+// 第三次 NaN同理
+```
+
+### generator 的问题
+
+todo...
+
+### generator 的 this
+
+```js
+function* Person() {
+  yield (this.name = "zs");
+  yield (this.age = 18);
+}
+let person = new Person();
+console.log(person); // 报错 Person不是一个构造函数
+```
+
+如何解决问题?
+
+```js
+function* Person() {
+  yield (this.name = "zs");
+  yield (this.age = 18);
+}
+let person = {};
+let obj = Person.bind(person)();
+console.log(obj.next()); // {value: 'zs', done: false}
+```
+
+### generator 的应用场景
+
+场景一: 图片切换
+
+```js
+// 普通写法
+<input type="button" value="切换图片" id="btn" />
+<img src="images/b.jpg" id="mv"/>
+<script>
+let button = document.getElementById('btn');
+let mm = document.getElementById('mv');
+let flag = 0;
+button.onclick = function() {
+  if (flag === 0) {
+    mm.src = 'images/a.jpg';
+    flag = 1
+  } else {
+    mm.src = 'images/b.jpg'
+    flag = 0
+  }
+};
+</script>
+```
+
+```js
+// generator写法
+
 ```
