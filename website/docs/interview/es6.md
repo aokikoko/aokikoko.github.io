@@ -839,6 +839,80 @@ console.log(result3); // 3
 // { value: undefined, done: true }
 ```
 
+### generator 面试题
+
+```js
+function* test(num) {
+  let x = 3 * (yield num + 1);
+  let y = yield x / 3;
+  return x + y + num;
+}
+
+let n = test(6);
+console.log(n.next());
+console.log(n.next());
+console.log(n.next());
+
+// 第一个console里输出{done: false, value: 7}, 因为执行next后, 碰到yield暂停, 并且把结果 6 + 1 返回
+// 第二次调用next函数时, 接着yield往下走, 但是第二次调用时, 并没有传递任何参数, 所以对应的 let y = yield x / 3 中的 x 是undefined, 所以输出NaN
+// 第三次 NaN同理
+```
+
+### generator 的问题
+
+todo...
+
+### generator 的 this
+
+```js
+function* Person() {
+  yield (this.name = "zs");
+  yield (this.age = 18);
+}
+let person = new Person();
+console.log(person); // 报错 Person不是一个构造函数
+```
+
+如何解决问题?
+
+```js
+function* Person() {
+  yield (this.name = "zs");
+  yield (this.age = 18);
+}
+let person = {};
+let obj = Person.bind(person)();
+console.log(obj.next()); // {value: 'zs', done: false}
+```
+
+### generator 的应用场景
+
+场景一: 图片切换
+
+```js
+// 普通写法
+<input type="button" value="切换图片" id="btn" />
+<img src="images/b.jpg" id="mv"/>
+<script>
+let button = document.getElementById('btn');
+let mm = document.getElementById('mv');
+let flag = 0;
+button.onclick = function() {
+  if (flag === 0) {
+    mm.src = 'images/a.jpg';
+    flag = 1
+  } else {
+    mm.src = 'images/b.jpg'
+    flag = 0
+  }
+};
+</script>
+```
+
+```js
+// generator写法
+```
+
 ## Promise
 
 Promise 就是一个对象, 而 Promise 对象代表一个异步任务, 也就是需要长时间执行的任务. 也就是说通过 promise 对象可以将异步操作使用同步操作的方式表达出来, 避免了层层嵌套的回调函数的问题, 也就是回调地狱的问题
@@ -903,3 +977,154 @@ getJson("http://127.0.0.1:5500").then(
 ```
 
 ### Promise 常见误区
+
+每个 then 方法都是为上一个 then 方法返回的 promise 对象添加状态明确后的回调
+
+### Promise 对象异常处理
+
+```js
+// 写法1
+getJson("错误的url")
+  .then(function (value) {
+    console.log(value);
+  })
+  .catch(function (err) {
+    console.log(err);
+  });
+// 等价于
+getJson("错误的url")
+  .then(function (value) {
+    console.log(value);
+  })
+  .then(undefined, function (err) {
+    console.log(err);
+  });
+```
+
+### Promise 并行处理
+
+```js
+getJson('url')
+getJson('url')
+getJson('url')
+...
+```
+
+上面是不合理的写法, 应该是用 all 方法
+
+```js
+Promise.all([promise1, promise2]).then(
+  function (data) {
+    console.log("data", data); // 存了promise1 和 2的结果, 都成功才是成功, 有一个失败就是失败
+  }, // 拿到结果的顺序也和请求顺序一致
+  function (err) {
+    console.log(err);
+  }
+);
+```
+
+希望一个请求但是不影响其他请求结果
+
+```js
+Promise.all([
+  getJson("地址1"),
+  getJson("地址2"),
+  getJson("错误地址").catch(() => {}), // 这个catch返回一个成功的promise, 还会走后面的then
+])
+  .then((res) => {
+    console.log(res);
+  })
+  .catch((err) => {
+    console.log(err);
+  });
+```
+
+### Promise.race
+
+数组内有一个人任务完成就结束了
+
+### Promise 中的静态方法
+
+1. Promise.resolve()
+
+```js
+// 作用: 将一个值快速转换成对应的一个promise对象, 返回一个成功的promise对象
+Promise.resolve("abc"); // resolve方法会将abc字符串转换成promise对象
+
+Promise.resolve("abc").then(function (value) {
+  console.log(value); // abc
+});
+// 等价于
+new Promise(function (resolve, reject) {
+  resolve("abc");
+});
+```
+
+2. Promise.reject()
+
+```js
+// 创建一个失败的promise对象
+Promise.reject(new Error("abc")).catch(function (err) {
+  console.log(err);
+});
+```
+
+### Promise 执行顺序问题
+
+如果在 promise 中没有任何异步操作, 他的回调函数也会进入到回调队列当中进行相应的排队, 也就是说等到所有的同步代码执行完才会执行 promise 对象中的回调函数, 看如下代码
+
+```js
+console.log("start");
+Promise.resolve().then(() => {
+  console.log("promise");
+});
+// resolve 方法返回的是一个成功的promise对象, 但是在promise对象当中没有任何的异步任务
+console.log("end");
+```
+
+改造一下
+
+```js
+console.log("start");
+setTimeout(() => {
+  console.log("setTimeout");
+}, 0);
+Promise.resolve()
+  .then(() => {
+    console.log("promise");
+  })
+  .then(() => {
+    console.log("promise2");
+  })
+  .then(() => {
+    console.log("promise3");
+  });
+console.log("end");
+
+// 输出
+// start
+// end
+// promise
+// promise2
+// promise3
+// setTimeout
+```
+
+为何输出这个顺序? 宏任务和微任务
+
+settimeout 是宏任务, 先进入队列进行排队, promise 的回调作为微任务执行, 会在本轮调用后自动执行, 也就是说微任务在当前任务结束后立即执行, 而不是排到末尾
+
+### 模拟 Promise
+
+1. 基本结构
+
+```js
+function MyPromise(task) {
+  let that = this;
+  that.status = "Pending";
+  function resolve() {}
+  function reject() {}
+  task(resolve, reject);
+}
+let myPromise = new MyPromise(function (resolve, reject) {});
+```
