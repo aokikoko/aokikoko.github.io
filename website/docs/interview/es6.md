@@ -1071,8 +1071,60 @@ Promise.reject(new Error("abc")).catch(function (err) {
 
 ### Promise 执行顺序问题
 
-如果在promise中没有任何异步操作, 他的回调函数也会进入到回调队列当中进行相应的排队, 也就是说等到所有的同步代码执行完才会执行promise对象中的回调函数, 看如下代码
+如果在 promise 中没有任何异步操作, 他的回调函数也会进入到回调队列当中进行相应的排队, 也就是说等到所有的同步代码执行完才会执行 promise 对象中的回调函数, 看如下代码
 
 ```js
-console.log()
+console.log("start");
+Promise.resolve().then(() => {
+  console.log("promise");
+});
+// resolve 方法返回的是一个成功的promise对象, 但是在promise对象当中没有任何的异步任务
+console.log("end");
+```
+
+改造一下
+
+```js
+console.log("start");
+setTimeout(() => {
+  console.log("setTimeout");
+}, 0);
+Promise.resolve()
+  .then(() => {
+    console.log("promise");
+  })
+  .then(() => {
+    console.log("promise2");
+  })
+  .then(() => {
+    console.log("promise3");
+  });
+console.log("end");
+
+// 输出
+// start
+// end
+// promise
+// promise2
+// promise3
+// setTimeout
+```
+
+为何输出这个顺序? 宏任务和微任务
+
+settimeout 是宏任务, 先进入队列进行排队, promise 的回调作为微任务执行, 会在本轮调用后自动执行, 也就是说微任务在当前任务结束后立即执行, 而不是排到末尾
+
+### 模拟 Promise
+
+1. 基本结构
+
+```js
+function MyPromise(task) {
+  let that = this;
+  that.status = "Pending";
+  function resolve() {}
+  function reject() {}
+  task(resolve, reject);
+}
+let myPromise = new MyPromise(function (resolve, reject) {});
 ```
