@@ -911,7 +911,6 @@ button.onclick = function() {
 
 ```js
 // generator写法
-
 ```
 
 ## Promise
@@ -978,3 +977,102 @@ getJson("http://127.0.0.1:5500").then(
 ```
 
 ### Promise 常见误区
+
+每个 then 方法都是为上一个 then 方法返回的 promise 对象添加状态明确后的回调
+
+### Promise 对象异常处理
+
+```js
+// 写法1
+getJson("错误的url")
+  .then(function (value) {
+    console.log(value);
+  })
+  .catch(function (err) {
+    console.log(err);
+  });
+// 等价于
+getJson("错误的url")
+  .then(function (value) {
+    console.log(value);
+  })
+  .then(undefined, function (err) {
+    console.log(err);
+  });
+```
+
+### Promise 并行处理
+
+```js
+getJson('url')
+getJson('url')
+getJson('url')
+...
+```
+
+上面是不合理的写法, 应该是用 all 方法
+
+```js
+Promise.all([promise1, promise2]).then(
+  function (data) {
+    console.log("data", data); // 存了promise1 和 2的结果, 都成功才是成功, 有一个失败就是失败
+  }, // 拿到结果的顺序也和请求顺序一致
+  function (err) {
+    console.log(err);
+  }
+);
+```
+
+希望一个请求但是不影响其他请求结果
+
+```js
+Promise.all([
+  getJson("地址1"),
+  getJson("地址2"),
+  getJson("错误地址").catch(() => {}), // 这个catch返回一个成功的promise, 还会走后面的then
+])
+  .then((res) => {
+    console.log(res);
+  })
+  .catch((err) => {
+    console.log(err);
+  });
+```
+
+### Promise.race
+
+数组内有一个人任务完成就结束了
+
+### Promise 中的静态方法
+
+1. Promise.resolve()
+
+```js
+// 作用: 将一个值快速转换成对应的一个promise对象, 返回一个成功的promise对象
+Promise.resolve("abc"); // resolve方法会将abc字符串转换成promise对象
+
+Promise.resolve("abc").then(function (value) {
+  console.log(value); // abc
+});
+// 等价于
+new Promise(function (resolve, reject) {
+  resolve("abc");
+});
+```
+
+2. Promise.reject()
+
+```js
+// 创建一个失败的promise对象
+Promise.reject(new Error("abc")).catch(function (err) {
+  console.log(err);
+});
+```
+
+### Promise 执行顺序问题
+
+如果在promise中没有任何异步操作, 他的回调函数也会进入到回调队列当中进行相应的排队, 也就是说等到所有的同步代码执行完才会执行promise对象中的回调函数, 看如下代码
+
+```js
+console.log()
+```
