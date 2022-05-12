@@ -1128,3 +1128,167 @@ function MyPromise(task) {
 }
 let myPromise = new MyPromise(function (resolve, reject) {});
 ```
+
+2. 异常处理
+
+当我们创建 promise 对象的时候, 执行了传递进的回调函数, 在执行中可能会出现异常, 所以加上 try catch, 如果出现异常就调用 reject 方法, 在 reject 方法中修改状态. 又定义了 then 方法在原型上, 这样创建出来的 promise 都可以调用. 出现异常的话是调用 then 方法的第二个参数
+
+```js
+function MyPromise(task) {
+  let that = this;
+  that.status = "Pending";
+  function resolve() {}
+  function reject() {
+    if (that.status == "Pending") {
+      that.status = "Rejected";
+      // 状态修改完成后, 调用的是then 方法中处理失败的回调函数
+    }
+  }
+  try {
+    task(resolve, reject);
+  } catch (e) {
+    reject(e);
+  }
+}
+MyPromise.prototype.then = function (onFulfilled, onRejected) {};
+let myPromise = new MyPromise(function (resolve, reject) {});
+```
+
+3. then 方法处理
+
+then 方法是可以多次执行调用的, 可以用多个回调函数来处理, 需要用到一个数组来处理正确的回调和错误回调
+
+```js
+function MyPromise(task) {
+  let that = this;
+  that.status = "Pending";
+  // 这个属性来存储promise的结果
+  that.value = undefined;
+  that.onResolvedCallbacks = [];
+  that.onRejectedCallbacks = [];
+  function resolve(value) {
+    if (that.status === "Pending") {
+      that.status = "Resolved";
+      that.value = value;
+      that.onResolvedCallbacks.forEach((item) => item(that.value));
+    }
+  }
+  function reject(reason) {
+    if (that.status == "Pending") {
+      that.status = "Rejected";
+      // 状态修改完成后, 调用的是then 方法中处理失败的回调函数
+      that.value = reason;
+      that.onRejectedCallbacks.forEach((item) => item(that.value));
+    }
+  }
+  try {
+    task(resolve, reject);
+  } catch (e) {
+    reject(e);
+  }
+}
+MyPromise.prototype.then = function (onFulfilled, onRejected) {
+  let that = this;
+  that.onResolvedCallbacks.push(onFulfilled);
+  that.onRejectedCallbacks.push(onRejected);
+};
+let myPromise = new MyPromise(function (resolve, reject) {
+  setTimeout(function () {
+    let num = Math.random();
+    if (num > 0.3) {
+      resolve("成功了");
+    } else {
+      reject("失败了");
+    }
+  }, 3000);
+});
+myPromise.then(
+  function (value) {
+    console.log(value);
+  },
+  function (err) {
+    console.log(err);
+  }
+);
+```
+
+4. 完善操作
+
+```js
+function MyPromise(task) {
+  let that = this;
+  that.status = "Pending";
+  // 这个属性来存储promise的结果
+  that.value = undefined;
+  that.onResolvedCallbacks = [];
+  that.onRejectedCallbacks = [];
+  function resolve(value) {
+    if (that.status === "Pending") {
+      that.status = "Resolved";
+      that.value = value;
+      that.onResolvedCallbacks.forEach((item) => item(that.value));
+    }
+  }
+  function reject(reason) {
+    if (that.status == "Pending") {
+      that.status = "Rejected";
+      // 状态修改完成后, 调用的是then 方法中处理失败的回调函数
+      that.value = reason;
+      that.onRejectedCallbacks.forEach((item) => item(that.value));
+    }
+  }
+  try {
+    task(resolve, reject);
+  } catch (e) {
+    reject(e);
+  }
+}
+MyPromise.prototype.then = function (onFulfilled, onRejected) {
+  let that = this;
+  if (that.status == "Resolved") {
+    onFulfilled(that.value);
+  }
+  if (that.status === "Rejected") {
+    onRejected(that.value);
+  }
+  that.onResolvedCallbacks.push(onFulfilled);
+  that.onRejectedCallbacks.push(onRejected);
+};
+let myPromise = new MyPromise(function (resolve, reject) {
+  setTimeout(function () {
+    let num = Math.random();
+    if (num > 0.3) {
+      resolve("成功了");
+    } else {
+      reject("失败了");
+    }
+  }, 3000);
+});
+myPromise.then(
+  function (value) {
+    console.log(value);
+  },
+  function (err) {
+    console.log(err);
+  }
+);
+```
+
+## 常见异步编程方式
+
+1. 回调函数
+
+js 语言对异步编程的实现, 就是回调函数. 所谓回调函数, 就是把任务的第二段单独写在一个函数里面, 等到重新执行这个任务的时候, 就直接调用这个函数. 她的名字 callback, 翻译"重新调用"
+
+```js
+fs.readFile("/etc/passwd", function (err, data) {
+  if (err) throw err;
+  console.log(data);
+});
+```
+
+上面这段代码是读取大文件的操作, 肯定是需要异步, 读取文件时会执行两个阶段, 第一个阶段任务会向操作系统发出请求, 要读取某个文件, 然后程序执行一项任务, 等到操作系统返回这个文件, 程序就会执行第二个任务, 也就是对文件进行处理
+
+2. Promise 对象
+
+3.
