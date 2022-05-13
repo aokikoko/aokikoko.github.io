@@ -1370,6 +1370,7 @@ test().then(function (data) {
 ```
 
 ```js
+// 模拟一个耗时的异步任务
 function sleep(second) {
   return new Promise(function (resolve, reject) {
     setTimeout(function () {
@@ -1393,5 +1394,40 @@ awaitDemo()
   .catch(function (err) {
     console.log(err);
   });
-console.log('执行其他的代码')
+console.log("执行其他的代码");
+```
+
+### 请求依赖关系的处理
+
+```js
+function sleep(second, param) {
+  return new Promise((resolve, reject) => {
+    setTimeout(() => {
+      resolve(param);
+    }, second);
+  });
+}
+async function test() {
+  let result1 = await sleep(2000, "req01");
+  let result2 = await sleep(1000, "req02" + result1);
+  let result3 = await sleep(500, "req03" + result2);
+  console.log(result1, result2, result3);
+}
+
+test();
+```
+
+### 并行请求的处理
+
+```js
+let result1 = await getJson(2000, "req01");
+let result2 = await getJson(1000, "req02" + result1);
+let result3 = await getJson(500, "req03" + result2);
+
+// 上面写法是串行, 我们应该改成并行, 也就是使用promise.all
+let result1 = getJson(2000, "req01");
+let result2 = getJson(1000, "req02" + result1);
+let result3 = getJson(500, "req03" + result2);
+let p = await Promise.all([result1, result2, result3])
+// 隐藏loading
 ```
