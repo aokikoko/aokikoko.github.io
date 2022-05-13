@@ -1291,4 +1291,143 @@ fs.readFile("/etc/passwd", function (err, data) {
 
 2. Promise 对象
 
-3.
+回调函数本身没问题, 只是嵌套过多会产生回调地狱, 举例代码
+
+```js
+fs.readFile("/fileA", function (err, data) {
+  fs.readFile("/fileB", function (err, data) {
+    //...
+  });
+});
+```
+
+Promise 对象就是解决这个问题, 举例代码
+
+```js
+readFile(fileA)
+  .then(function (data) {
+    console.log(data.toString());
+  })
+  .then(function () {
+    return readFile(fileB);
+  })
+  .then(function (data) {
+    console.log(data.toString());
+  })
+  .catch(function (err) {
+    console.log(err);
+  });
+```
+
+3. Generator 函数
+
+Generator 函数, 就是封装一个异步任务, 或者说是异步任务的容器, 异步操作需要暂停的地方, 都用到 yield 语句, 下面案例是前面用 generator 函数封装的 ajax 的异步操作
+
+```js
+function* main() {
+  let result = yield request("http://xxx.com/api");
+  let resp = JSON.parse(result);
+  console.log(resp.value);
+}
+
+function request(url) {
+  makeAjaxCall(url, function (response) {
+    it.next(response);
+  });
+}
+
+let it = main();
+it.next();
+```
+
+4. async 函数
+
+下面讲
+
+## async 函数
+
+是 promise 和 generator 函数的语法糖
+
+```js
+async function test() {
+  let result = await Math.random();
+  console.log(result);
+}
+```
+
+async 函数返回一个 promise 对象
+
+```js
+async function test() {
+  let result = await Math.random();
+  // console.log(result)
+  return result;
+}
+
+test().then(function (data) {
+  console.log(data);
+});
+```
+
+```js
+// 模拟一个耗时的异步任务
+function sleep(second) {
+  return new Promise(function (resolve, reject) {
+    setTimeout(function () {
+      let num = Math.random();
+      if (num > 0.8) {
+        resolve("成功了");
+      } else {
+        reject("失败了");
+      }
+    }, second);
+  });
+}
+async function awaitDemo() {
+  let result = await sleep(3000);
+  return result;
+}
+awaitDemo()
+  .then(function (data) {
+    console.log(data);
+  })
+  .catch(function (err) {
+    console.log(err);
+  });
+console.log("执行其他的代码");
+```
+
+### 请求依赖关系的处理
+
+```js
+function sleep(second, param) {
+  return new Promise((resolve, reject) => {
+    setTimeout(() => {
+      resolve(param);
+    }, second);
+  });
+}
+async function test() {
+  let result1 = await sleep(2000, "req01");
+  let result2 = await sleep(1000, "req02" + result1);
+  let result3 = await sleep(500, "req03" + result2);
+  console.log(result1, result2, result3);
+}
+
+test();
+```
+
+### 并行请求的处理
+
+```js
+let result1 = await getJson(2000, "req01");
+let result2 = await getJson(1000, "req02" + result1);
+let result3 = await getJson(500, "req03" + result2);
+
+// 上面写法是串行, 我们应该改成并行, 也就是使用promise.all
+let result1 = getJson(2000, "req01");
+let result2 = getJson(1000, "req02" + result1);
+let result3 = getJson(500, "req03" + result2);
+let p = await Promise.all([result1, result2, result3])
+// 隐藏loading
+```
