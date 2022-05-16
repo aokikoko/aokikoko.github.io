@@ -1,5 +1,5 @@
 ---
-slug: es6
+slug: module
 title: "[面试题] 模块化"
 sidebar_position: 14
 ---
