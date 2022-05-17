@@ -1173,3 +1173,511 @@ Vue.component("father", {
 组件中的插槽，**让使用者可以决定组件内部的一些内容到底展示什么**，也就是，插槽可以实现父组件向子组件传递模板内容。具有插槽的组件将会有更加强大的拓展性，
 
 下面看一个实际应用的例子来体会一下插槽的引用场景。
+
+![chacao](assets/chacao.jpg)
+
+三个页面中都有导航栏，基本结构都是一样的：左中右分别有一个东西，只是显示的内容不同而已。那我们如何来实现这种**结构相似但是内容不同**呢？
+  你一定是想着，直接定义三个组件，然后在模板中分别显示不同的内容，对不对？
+  首先，如果我们封装成三个组件，显然不合适，比如每个页面都有返回，这部分的内容我们就要重复去封装
+  其次，如果我们封装成一个，还是不合理，因为有些左侧是菜单栏，有些中间是搜索框，有些是文字。
+那我们该怎么办呢？其实很简单，用组件插槽。
+
+上面最佳的解决办法是**将共性抽取到组件中，将不同暴露给插槽**，一旦我们**使用了插槽，就相当于预留了空间**，**空间的内容取决于使用者**
+
+如下图所示：
+
+![chacao1](assets/chacao1.png)
+
+通过上图，我们可以在父组件中使用子组件，同时由于在子组件中创建插槽`slot`，也就是相当于预留了空间，这时在父组件中使用子组件时，可以传递不同的内容。
+
+下面看一下插槽的应用
+
+基本使用方式
+
+```vue
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>插槽基本使用</title>
+  </head>
+  <body>
+    <div id="app">
+      <alert-box>程序出现了bug</alert-box>
+      <alert-box>程序出现了警告</alert-box>
+    </div>
+    <script src="./vue.js"></script>
+    <script>
+      Vue.component("alert-box", {
+        template: `
+                <div>
+                    <strong>ERROR:</strong>
+                    <slot></slot>
+                </div>    
+            `,
+      });
+      const vm = new Vue({
+        el: "#app",
+        data: {},
+      });
+    </script>
+  </body>
+</html>
+```
+
+通过上面的代码我们可以看到，在`alert-box`这个组件中，定义了一个插槽，也就是预留了一个位置，下面使用该组件的时候，都可以向该插槽中传递数据。而`<strong>`标签中的内容就相当于是一个公共的内容了。
+
+当然在插槽中也是可以添加默认的内容的。
+
+```js
+  <div id="app">
+      <alert-box>程序出现了bug</alert-box>
+      <alert-box>程序出现了警告</alert-box>
+      <alert-box></alert-box>
+    </div>
+    <script src="./vue.js"></script>
+    <script>
+      Vue.component("alert-box", {
+        template: `
+                <div>
+                    <strong>ERROR:</strong>
+                    <slot>默认内容</slot>
+                </div>
+            `,
+      });
+      const vm = new Vue({
+        el: "#app",
+        data: {},
+      });
+    </script>
+```
+
+在上面的代码中，我们给插槽添加了默认的内容，如果在使用`alert-box`组件的时候，没有给插槽传递值，就会展示插槽中的默认内容。
+
+### 具名插槽
+
+所谓的具名插槽就是有名字的插槽。
+
+略
+
+### 作用域插槽
+
+应用场景：父组件对子组件的内容进行加工处理。这也是作用域插槽的一个很重要特性，
+
+下面我们通过一个例子来体会一下这句话的作用。
+
+首先，我们先创建一个用户列表。
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>作用域插槽</title>
+  </head>
+  <body>
+    <div id="app">
+      <user-list :list="userList"></user-list>
+    </div>
+    <script src="./vue.js"></script>
+    <script>
+      Vue.component("user-list", {
+        props: ["list"],
+        template: `<div>
+                <ul>
+                    <li :key="item.id" v-for='item in list'>{{item.userName}}</li>
+                 </ul>   
+                </div>`,
+      });
+      const vm = new Vue({
+        el: "#app",
+        data: {
+          userList: [
+            {
+              id: 1,
+              userName: "张三",
+            },
+            {
+              id: 2,
+              userName: "李四",
+            },
+            {
+              id: 3,
+              userName: "王五",
+            },
+          ],
+        },
+      });
+    </script>
+  </body>
+</html>
+```
+
+在上面的代码中，我们首先创建了一个`user-list`组件，在这个组件中接收父组件传递过来的用户数据，通过循环的方式展示传递过来的用户数据。
+
+现在，这里有一个新的需求，就是修改某个用户名的颜色，让其高亮显示。这个需求应该怎样来处理呢？
+
+我们是否可以在子组件`user-list`中实现这个功能呢？
+
+虽然可以，但是一般不建议你这么做，因为一个组件创建好以后，一般不建议修改。你可以想一下，如果这个组件是其它人创建的，而且很多人都在用，如果直接修改这个子组件，就会造成很多的问题。
+
+所以这里，还是从父组件中进行修改。也是通过父组件来决定子组件中的哪个用户名进行高亮显示。
+
+下面对代码进行修改：
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>作用域插槽</title>
+  </head>
+  <body>
+    <div id="app">
+      <user-list :list="userList">
+        <template slot-scope="slotProps">
+          <strong v-if="slotProps.info.id===2"
+            >{{slotProps.info.userName}}</strong
+          >
+          <span v-else>{{slotProps.info.userName}}</span>
+        </template>
+      </user-list>
+    </div>
+    <script src="./vue.js"></script>
+    <script>
+      Vue.component("user-list", {
+        props: ["list"],
+        template: `<div>
+                <ul>
+                    <li :key="item.id" v-for='item in list'>
+                        <slot :info="item">
+                            {{item.userName}}
+                            </slot>
+                        </li>
+                 </ul>   
+                </div>`,
+      });
+      const vm = new Vue({
+        el: "#app",
+        data: {
+          userList: [
+            {
+              id: 1,
+              userName: "张三",
+            },
+            {
+              id: 2,
+              userName: "李四",
+            },
+            {
+              id: 3,
+              userName: "王五",
+            },
+          ],
+        },
+      });
+    </script>
+  </body>
+</html>
+```
+
+通过上面的代码可以看到，为了能够实现父组件决定子组件中哪个用户名能够高亮显示，需要在设计子组件的时候，为其添加对应的插槽。
+
+```html
+template: `
+<div>
+  <ul>
+    <li :key="item.id" v-for="item in list">
+      <slot :info="item"> {{item.userName}} </slot>
+    </li>
+  </ul>
+</div>
+`,
+```
+
+在子组件的`template`模板中，添加了插槽，同时为其动态绑定一个属性`info`(这个属性的名字是可以随意命名的)，该属性的值为用户的信息。
+
+绑定该属性的目的就是为了能够在父组件中获取用户的信息。
+
+下面看一下父组件中的修改
+
+```vue
+<div id="app">
+      <user-list :list="userList">
+        <template slot-scope="slotProps">
+          <strong v-if="slotProps.info.id===2"
+            >{{slotProps.info.userName}}</strong
+          >
+          <span v-else>{{slotProps.info.userName}}</span>
+        </template>
+      </user-list>
+    </div>
+```
+
+父组件在使用子组件`user-list`的时候，这里为其添加了`template`这个标签，而且这个标签的属性`slot-scope`是固定的，为其指定了一个值为`slotProps`,该值中，存储的就是从子组件中获取到的用户数据。
+
+所以接下来通过`slotProps`获取`info`（注意这里要与子组件中的`slot`属性保持一致）中的用户数据。然后进行判断，如果用户编号为 2 的，为其加错，否者正常展示。
+
+通过以上的案例，我们可以看到父组件通过作用域插槽实现了对子组件中数据的处理。其实这也就是为什么叫做作用域插槽的原因：
+
+是因为模板虽然是在父级作用域（父组件）中渲染的，却能拿到子组件的数据。
+
+### 作用域插槽案例
+
+下面，我们通过一个列表的案例，来体会一下作用域插槽的应用。
+
+首先我们先来做一个基本的列表组件
+
+![liebiao](assets/liebiao.png)
+
+这里，我们首先使用的是具名插槽完成的，如下代码所示：
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>作用域插槽案例</title>
+  </head>
+  <body>
+    <div id="app">
+      <my-list>
+        <template slot="title"> 用户列表 </template>
+        <template slot="content">
+          <ul>
+            <li v-for="item in listData" :key="item.id">{{item.userName}}</li>
+          </ul>
+        </template>
+      </my-list>
+    </div>
+    <script src="./vue.js"></script>
+    <script>
+      Vue.component("my-list", {
+        template: `
+                <div class="list">
+                    <div class="list-title">
+                        <slot name="title"></slot>
+                    </div>
+                    <div class="list-content">
+                        <slot name="content"></slot>
+                    </div>
+                </div>
+            `,
+      });
+      const vm = new Vue({
+        el: "#app",
+        data: {
+          listData: [
+            { id: 1, userName: "张三" },
+            {
+              id: 2,
+              userName: "李四",
+            },
+            {
+              id: 3,
+              userName: "王五",
+            },
+          ],
+        },
+      });
+    </script>
+  </body>
+</html>
+```
+
+在上面的代码中，我们在子组件`my-list`中使用了`具名插槽`。然后父组件在使用子组件`my-list`的时候，可以通过`template`标签加上`slot`属性向具名插槽中传递数据。
+
+虽然以上的写法满足了基本的需求，但是作为组件的使用者，这样的一个组件会让我们感觉非常的麻烦，也就是我们在使用`my-list`这个组件的时候，还需要自己去编写`content`区域的循环逻辑。这样就比较麻烦了，下面对上面的代码在做一些修改。
+
+为了解决这个问题，我们可以把循环写到子组件中，这样我们在使用的时候，不需要写循环了，只是传递数据就可以了，这样就方便多了。其实这里我们就可以不用具名插槽了。
+
+所以修改后的代码如下：
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>作用域插槽案例</title>
+  </head>
+  <body>
+    <div id="app">
+      <my-list title="用户列表" :content="listData"> </my-list>
+    </div>
+    <script src="./vue.js"></script>
+    <script>
+      Vue.component("my-list", {
+        props: ["title", "content"],
+        template: `
+                <div class="list">
+                    <div class="list-title">
+
+                        
+                        {{title}}
+                    </div>
+                    <div class="list-content">
+
+                        <ul class="list-content">
+                            <li v-for="item in content" :key="item.id">{{item.userName}}</li>
+                        </ul> 
+                    </div>
+                </div>
+            `,
+      });
+      const vm = new Vue({
+        el: "#app",
+        data: {
+          listData: [
+            { id: 1, userName: "张三" },
+            {
+              id: 2,
+              userName: "李四",
+            },
+            {
+              id: 3,
+              userName: "王五",
+            },
+          ],
+        },
+      });
+    </script>
+  </body>
+</html>
+```
+
+在上面的代码中，我们没有使用插槽，直接将数据传递到子组件`my-list`中，然后在该子组件中接收到数据，并进行了循环遍历。
+
+经过这一次的改造，满足了我们前面所提到的易用性问题，但是现在又有了新的问题，组件的拓展性不好。
+
+每次只能生成相同结构的列表，一旦业务需要发生了变化，组件就不再使用了。比如，我现在有了新的需求，在一个列表的每个列表项前面加上一个小的`logo`,我总不能又写一个新的组件来适应需求的变化吧？
+
+这里就可以使用作用域插槽来解决这个问题。
+
+具体的实现代码如下所示：
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>作用域插槽案例</title>
+  </head>
+  <body>
+    <div id="app">
+      <!-- 如果没有传递模板，那么子组件的插槽中只会展示用户名 -->
+      <my-list title="用户列表" :content="listData"></my-list>
+      <!-- 传递模板 -->
+      <my-list title="用户列表2" :content="listData">
+        <template slot-scope="scope">
+          <img src="./one.png" width="20" />
+          <span>{{scope.item.userName}}</span>
+        </template>
+      </my-list>
+    </div>
+    <script src="./vue.js"></script>
+    <script>
+      Vue.component("my-list", {
+        props: ["title", "content"],
+        template: `
+                <div class="list">
+                    <div class="list-title">
+                        {{title}}
+                    </div>
+                    <div class="list-content">
+
+                   <ul class="list-content">
+                            <li v-for="item in content" :key="item.id">
+                           <!--这里将content中的每一项数据绑定到slot的itemb变量上，在父组件中就可以获取到item变量-->     
+                        <slot :item="item">{{item.userName}}</slot>
+                                
+                                </li>
+                        </ul> 
+                    </div>
+                </div>
+            `,
+      });
+      const vm = new Vue({
+        el: "#app",
+        data: {
+          listData: [
+            { id: 1, userName: "张三" },
+            {
+              id: 2,
+              userName: "李四",
+            },
+            {
+              id: 3,
+              userName: "王五",
+            },
+          ],
+        },
+      });
+    </script>
+  </body>
+</html>
+```
+
+在上面的代码中，我们首先在子组件`my-list`中，添加了作用域的插槽。
+
+```html
+<ul class="list-content">
+  <li v-for="item in content" :key="item.id">
+    <!--这里将content中的每一项数据绑定到slot的itemb变量上，在父组件中就可以获取到item变量-->
+    <slot :item="item">{{item.userName}}</slot>
+  </li>
+</ul>
+```
+
+同时在父组件中，使用对应的插槽
+
+```html
+<div id="app">
+  <!-- 如果没有传递模板，那么子组件的插槽中只会展示用户名 -->
+  <my-list title="用户列表" :content="listData"></my-list>
+  <!-- 传递模板 -->
+  <my-list title="用户列表2" :content="listData">
+    <template slot-scope="scope">
+      <img src="./one.png" width="20" />
+      <span>{{scope.item.userName}}</span>
+    </template>
+  </my-list>
+</div>
+```
+
+再回到开始的问题，作用域插槽到底是干嘛用的？很显然，它的作用就如官网所说的一样：将组件的数据暴露出去。而这么做，给了组件的使用者根据数据定制模板的机会，组件不再是写死成一种特定的结构。
+
+以上就是作用域插槽的应用，需要你仔细体会。
+
+那么，在这里再次问一个问题，就是在你所使用的`Vue`插件或者是第三方的库中，有没有遇到使用作用域插槽的情况呢？
+
+其实，比较典型的就是`element-ui`的`table`组件，它就可以通过添加作用域插槽改变渲染的原始数据。
+
+如下图所示：
+
+![slotscope](assets/slotscope.png)
+
+### 14.5 插槽应用总结
+
+**为什么要使用插槽**
+
+组件的最大特性就是复用性，而用好插槽能大大提高组件的可复用能力。
+
+组件的复用性常见情形如*在有相似功能的模块中，他们具有类似的 UI 界面，通过使用组件间的通信机制传递数据，从而达到一套代码渲染不同数据的效果*。
+
+然而这种利用组件间通信的机制只能满足在结构上相同，渲染数据不同的情形；假设两个相似的页面，他们只在某一模块（区域）有不同的`UI`效果(例如，前面所做的列表，发现可以显示不同的`ui`效果)，以上办法就做不到了。可能你会想，使用 `v-if` 和 `v-else`来特殊处理这两个功能模块，不就解决了？很优秀，解决了，但不完美。极端一点，假设我们有一百个这种页面，就需要写一百个`v-if`、`v-else-if`、`v-else`来处理？那组件看起来将不再简小精致，维护起来也不容易。
+
+而 插槽 “**`SLOT`**”就可以完美解决这个问题
+
+**什么情况下使用插槽**
+
+顾名思义，插槽即往卡槽中插入一段功能块。还是举刚才的例子。如果有一百个基本相似，只有一个模块功能不同的页面，而我们只想写一个组件。可以将不同的那个模块单独处理成一个卡片，在需要使用的时候将对应的卡片插入到组件中即可实现对应的完整的功能页。而不是在组件中把所有的情形用`if-else`罗列出来（这里还是体会用户列表的案例）
+
+可能你会想，那我把一个组件分割成一片片的插槽，需要什么拼接什么，岂不是只要一个组件就能完成所有的功能？思路上没错，但是需要明白的是，卡片是在父组件上代替子组件实现的功能，使用插槽无疑是在给父组件页面增加规模，如果全都使用拼装的方式，和不用组件又有什么区别（例如，用户列表案例中需要其他的显示方式，需要在父组件中进行添加）。因此，**插槽并不是用的越多越好**。
+
+**插槽是组件最大化利用的一种手段，而不是替代组件的策略，当然也不能替代组件**。如果能在组件中实现的模块，或者只需要使用一次`v-else`， 或一次`v-else-if`，`v-else`就能解决的问题，都建议直接在组件中实现。
