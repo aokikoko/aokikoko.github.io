@@ -51,12 +51,12 @@ const config = {
         // hideOnScroll: true,  // 文档页面向下滚动时收起顶部导航
         style: 'dark',  // dark 和 primary (基于 --ifm-color-main 颜色)。
         items: [
-          {
-            type: 'doc',
-            docId: 'intro',
-            position: 'left',
-            label: '笔记',
-          },
+          // {
+          //   type: 'doc',
+          //   docId: 'intro',
+          //   position: 'left',
+          //   label: '笔记',
+          // },
           // 待完成关于我页面
           // {
           //   to: '/me',   点击后跳转的链接，站内跳转用 to ,站外用 href

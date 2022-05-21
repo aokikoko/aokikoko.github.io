@@ -72,14 +72,14 @@ input1.addEventListener(
 ### 节流
 
 ```js
-// 可拖拽 
+// 可拖拽
 // <div id="div1" draggable="true" style="width: 100px; height: 50px; background-color: #ccc" padding: 10px></div>
 
 function throttle(fn, delay = 100) {
   let timer = 0;
 
   return function () {
-    if (timer) return
+    if (timer) return;
 
     timer = setTimeout(() => {
       fn.apply(this, arguments); // 透传 this 和参数
@@ -88,11 +88,27 @@ function throttle(fn, delay = 100) {
   };
 }
 
-const div1 = document.getElementById('div1')
-div1.addEventListener('drag', throttle((e) => {
-  console.log(e.offsetX, e.offsetY)
-}, 200))
+const div1 = document.getElementById("div1");
+div1.addEventListener(
+  "drag",
+  throttle((e) => {
+    console.log(e.offsetX, e.offsetY);
+  }, 200)
+);
 ```
 
-
 ### 两者有什么区别
+
+:::tip
+防抖: 限制执行次数, 多次密集的触发只执行一次. 搜索框, 防抖关注结果.
+
+节流: 限制执行频率, 有节奏的执行. 拖拽事件 , 节流关注过程, 让变得有节奏
+:::
+
+## px 百分比 em rem vw/vh 有什么区别
+
+### px 和 %
+
+px 是基本单位, 也是绝对单位 (其他的都是相对单位), px的长度是固定的
+
+% 是相对于父元素的宽度比例 
