@@ -487,3 +487,77 @@ cookie 默认不可跨域共享, 但有些情况下可设置为共享
 主域名相同, 如www.baidu.com image.baidu.com
 
 设置 cookie domain 为主域名, 即可共享 cookie
+
+## HTTP 协议 1.0 1.1 2.0 有什么区别?
+
+### 1.0
+
+支持基础的 get post 方法
+
+### 1.1
+
+增加缓存策略 cache-control Etag 等
+
+支持长链接 Connection: keep-alive, 一次 TCP 连接多次请求
+
+断点续传, 状态码 206
+
+支持新的方法 PUT DELETE 等, 可用于 Restful API
+
+### 2.0
+
+可压缩 header, 减少体积
+
+多路复用, 一次 TCP 连接中可以多个 HTTP 并行请求
+
+服务端推送
+
+## script defer 和 async 有什么区别?
+
+![async](assets/async.JPG)
+
+HTML 和 JS 不能并行解析, 只能并行下载
+
+![async2](assets/async2.JPG)
+
+## 前端攻击, 该如何预防
+
+### XSS
+
+Cross Site Script 跨站脚本攻击
+
+手段: 黑客将 JS 代码插入到网页内容中, 渲染时执行 js 代码
+
+预防: 特殊字符替换(前端或者后端)
+
+### CSRF
+
+手段: 黑客诱导用户去访问另一个网站的接口, 伪造请求
+
+举例: 用户登录了 A 网站, 有了 cookie. 黑客诱导用户到 B 网站, 并发起 A 网站的请求. A 网站的 API 发现有 cookie, 认为是用户自己操作的
+
+预防: 严格的跨域限制, 比如判断 referer(请求来源), 为 cookie 设置 SameSite, 禁止跨域传递 cookie + 验证码机制
+
+### 点击劫持
+
+手段: 诱导界面上蒙一个透明 iframe, 诱导用户点击
+
+![if](assets/if.JPG)
+
+预防: 让 iframe 不能跨域加载
+
+![safe](assets/safe.JPG)
+
+### DDos
+
+分布式拒绝服务
+
+手段: 分布式, 大规模的流量访问, 让服务器瘫痪
+
+预防: 软件层不好做, 需硬件预防 (如阿里云 WAF)
+
+### SQL 注入
+
+手段: 黑客提交内容时写入 SQL 语句, 操作数据库
+
+预防: 处理输入的内容, 替换特殊字符
