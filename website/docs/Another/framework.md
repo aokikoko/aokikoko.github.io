@@ -132,3 +132,15 @@ HTTP 无状态, 每次请求都要带 cookie, 以帮助识别身份
 服务端也可以向客户端 set-cookie
 
 默认有跨域限制: 不可跨域共享, 传递 cookie. 如果要跨域共享, 需要设置 withCredentials
+
+现代浏览器开始禁止第三方 cookie, 和跨域限制不同. 这里是禁止网页引入的第三方 js 设置 cookie. 比如说做了个个人网站, 在上面挂了广告, 这个广告是通过第三方 js 引入的, 这个第三方 js 是可以设置 cookie 的. 这个 cookie 就可以记录下当前用户访问的一些信息, 比如说这个个人网站的文章是关于手机的, cookie 记录下这个用户有买手机的倾向 .那么为了打击第三方广告, 保护隐私. 不过这个禁止可以通过 SameSite: Strict / Lax / None;来选择禁止程度, None 就是不禁止
+
+### cookie 和 session
+
+cookie 用于登录验证, 存储用户标识(如 userid)
+
+session 在服务端, 存储用户详细信息, 和 cookie 信息一一对应
+
+cookie + session 是常见登录验证解决方案
+
+![session](assets/session.JPG)
