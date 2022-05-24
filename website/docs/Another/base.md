@@ -561,3 +561,113 @@ Cross Site Script 跨站脚本攻击
 手段: 黑客提交内容时写入 SQL 语句, 操作数据库
 
 预防: 处理输入的内容, 替换特殊字符
+
+## H5 页面如何进行首屏优化
+
+- 路由懒加载
+
+- SSR
+
+- 图片懒加载 lazyload
+
+- Hybrid
+
+- App 预取
+
+## 前端常用的设计模式? 并说明使用场景
+
+### 设计原则
+
+最重要的思想: 开放封闭原则
+
+对扩展开放: 让他是可扩展的, 可以扩展新的功能, 可以继续无限放大
+
+对修改封闭: 现有功能尽量保持稳定, 保持单一, 保持独立
+
+### 1. 工厂模式
+
+用一个工厂函数, 来创建实例, 隐藏 new
+
+如 jQuery $ 函数, React createElement 函数
+
+```js
+class Foo()
+
+const f = new Foo()
+
+// 这样写非常繁琐
+```
+
+```js
+function factory() {
+  return new Foo()
+}
+
+const f = factory()
+const f = factory()
+const f = factory()
+
+$('div') 本质上等于 new jQuery()
+```
+
+### 2. 单例模式
+
+全局唯一的实例(无法生成第二个)
+
+比如 Vuex Redux 的 store, 全局唯一的 dialog modal
+
+```js
+class SingleTon {
+  private constructor() {}
+  public static getInstance(): SingleTon {
+    return new SingleTon()
+  }
+  fn1() {}
+  fn2() {}
+}
+
+const s = new SingleTon() // 这样会报错 因为加了private 只能在内部调用也就是用过下面
+cosnt s = SingleTon.getInstance()
+```
+
+Js 单线程,创建单例很简单
+
+Java 是支持多线程的, 创建单例要考虑锁死线程. 否则多个线程同时创建, 单例就重复了 (多线程共享进程内存)
+
+### 3. 代理模式
+
+使用者不能直接访问对象, 而是访问一个代理层
+
+在代理层可以监听 get set 做很多事情
+
+如 ES6 Proxy 实现 Vue3 响应式
+
+### 4. 观察者模式
+
+```js
+// 一个主题, 一个观察者, 主题变化之后触发观察者执行
+btn.addEventListener('click', () => {...})
+```
+
+### 5. 发布订阅
+
+```js
+// 绑定
+event.on("event-key", () => {
+  // 事件1
+});
+event.on("event-key", () => {
+  // 事件1
+});
+
+// 触发执行
+event.emit("event-key");
+```
+
+### 观察者模式和发布订阅模式的区别
+
+![guanchazhe](assets/guanchazhe.png)
+
+观察者类似绑定事件的样子, 一个主题绑定一个监听, 直接触发事件. 主题和监听是认识的
+
+发布订阅有 event channel, 在 event channel 上绑定事件, 有个发布者类似 emit. publisher 和 subscriber 中间有中间媒介, 比如 eventBus
