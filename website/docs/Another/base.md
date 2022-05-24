@@ -561,3 +561,23 @@ Cross Site Script 跨站脚本攻击
 手段: 黑客提交内容时写入 SQL 语句, 操作数据库
 
 预防: 处理输入的内容, 替换特殊字符
+
+## WebSocket
+
+支持端对端通讯
+
+可以由 client 发起, 也可以由 server 发起
+
+用于: 消息通知, 直播间讨论区, 聊天室, 协同编辑
+
+![websocket](assets/websocket.JPG)
+
+ws 可以升级为 wss
+
+### WebSocket 和 HTTP 长轮询的区别?
+
+略
+
+## 如何实现网页多标签tab通讯
+
+
