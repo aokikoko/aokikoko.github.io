@@ -79,6 +79,51 @@ watch: {
 
 `v-model`是`vue`实现数据双向绑定最好的一个指令, `v-model`本质上不过是语法糖(v-bind, v-on),它负责监听用户的输入事件以更新数据,当你修改页面的时候 `v-model `自动去更新数据层 (`model)`,当你修改数据的时候 v-model 自动去更新视图层 (`view`)
 
+```js
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <div id="app">
+        <input type="text" v-model='username'> 
+        <!-- 此时的 v-model 的作用：是通过输入文本等信息(视图层的改变)，来改变数据层上的数据值；   然后再看模拟的双向绑定的视图层是否发生变化，从未可判断是否模拟成功； -->
+        <!-- 此时的 v-model='username' 是指：双向绑定视图层与数据层；-->
+
+        <input type="text" :value='username' @input='handle' placeholder="123456">
+        <!-- 而一般是将 'v-bind' 省略掉了，而以 ':' 来代替； -->
+        <!-- @input='handle' 是指：通过在表单中输入信息来触发 handle() 函数； -->
+        <!-- 此时的 :value='username' 是指：单向绑定视图层到数据层(即：视图层发生变化，数据层信息就发生变化；   而数据层信息发生变化并不能影响视图层发生变化) -->
+        <!-- 此时的 placeholder="123456" 是指：将 123456 信息默认显示在表单栏中； -->
+    </div>
+
+    <script src="./node_modules/vue/dist/vue.js"></script>    <!-- 此时是引入：vue.js 文件 -->
+
+    <script>
+        let vm = new Vue({
+            el: '#app',
+            data() {
+                return {
+                    username: ''    /* 返回一个数据对象 */
+                }
+            },
+            methods: {
+                handle(event) {  // 该 event 参数是默认传过来，接收信息的形参；
+                    this.username = event.target.value;
+                    /* 此时的 'event.target' 就是指 input 属性值，然后通过 'event.target.value' 来获得输入的数据信息 */
+                    //即：监听输入信息事件(input)，在输入信息有变化时，就触发 'handle()' 函数，然后将 username 的数据值修改成 view 中的 新输入的值，因此就实现了数据随着视图变化而变化；
+                }
+            }
+        });
+    </script>
+</body>
+</html>
+```
+
 ## 4、$nextTick
 
 - `Vue`是异步渲染

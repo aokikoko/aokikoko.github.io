@@ -690,3 +690,8 @@ event.emit("event-key");
 观察者类似绑定事件的样子, 一个主题绑定一个监听, 直接触发事件. 主题和监听是认识的
 
 发布订阅有 event channel, 在 event channel 上绑定事件, 有个发布者类似 emit. publisher 和 subscriber 中间有中间媒介, 比如 eventBus
+
+## setState 异步更新与同步更新
+
+## setState是微任务还是宏任务
+
