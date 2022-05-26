@@ -32,3 +32,17 @@ flex-wrap ：设置子元素是否换行
 align-content ：设置侧轴上的子元素排列方式（多行）
 align-items ：设置侧轴上的子元素排列方式（单行）
 flex-flow ：复合属性，相当于同时设置了flex-direction和flex-wrap
+
+## React
+
+使用Fragment
+
+不在JSX中定义函数, 比如箭头函数. 因为React中的jsx会频繁执行, state更改一次, jsx执行一词
+
+优化 React 中的条件渲染；
+
+、路由懒加载；
+
+列表渲染的时候加key；
+
+在函数组件中使用useCallback和useMemo来进行组件优化，依赖没有变化的话，不重复执行；
