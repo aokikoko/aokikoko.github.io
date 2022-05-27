@@ -46,3 +46,5 @@ flex-flow ：复合属性，相当于同时设置了flex-direction和flex-wrap
 列表渲染的时候加key；
 
 在函数组件中使用useCallback和useMemo来进行组件优化，依赖没有变化的话，不重复执行；
+
+english
