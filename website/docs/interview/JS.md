@@ -767,3 +767,89 @@ p.then(() => {
 其他方案, 可以参考一些博客
 
 ---
+
+### 浅拷贝的实现方式
+
+1. Object.assign()
+
+```js
+var obj = { a: { a: "hello", b: 21 } };
+var initalObj = Object.assign({}, obj);
+initalObj.a.a = "changed";
+console.log(obj.a.a); //  "changed"
+```
+
+2. 展开运算符
+
+```js
+let obj1 = { name: "Kobe", address: { x: 100, y: 100 } };
+let obj2 = { ...obj1 };
+obj1.address.x = 200;
+obj1.name = "wade";
+console.log("obj2", obj2); // obj2 { name: 'Kobe', address: { x: 200, y: 100 } }
+```
+
+### 深拷贝实现方式
+
+1. JSON.parse(JSON.stringify(OBJECT))
+
+```js
+var obj1 = { body: { a: 10 } };
+var obj2 = JSON.parse(JSON.stringify(obj1));
+obj2.body.a = 20;
+console.log(obj1);
+// { body: { a: 10 } } <-- 沒被改到
+console.log(obj2);
+// { body: { a: 20 } }
+console.log(obj1 === obj2);
+// false
+console.log(obj1.body === obj2.body);
+// false
+```
+
+封装成函数
+
+```js
+var cloneObj = function (obj) {
+  var str,
+    newobj = obj.constructor === Array ? [] : {};
+  if (typeof obj !== "object") {
+    return;
+  } else if (window.JSON) {
+    (str = JSON.stringify(obj)), //系列化对象
+      (newobj = JSON.parse(str)); //还原
+  } else {
+    for (var i in obj) {
+      newobj[i] = typeof obj[i] === "object" ? cloneObj(obj[i]) : obj[i];
+    }
+  }
+  return newobj;
+};
+```
+
+2. lodash deepclone
+
+3. 递归
+
+```js
+function deepClone(initalObj, finalObj) {
+  var obj = finalObj || {};
+  for (var i in initalObj) {
+    var prop = initalObj[i]; // 避免相互引用对象导致死循环，如initalObj.a = initalObj的情况
+    if (prop === obj) {
+      continue;
+    }
+    if (typeof prop === "object") {
+      obj[i] = prop.constructor === Array ? [] : {};
+      arguments.callee(prop, obj[i]);
+    } else {
+      obj[i] = prop;
+    }
+  }
+  return obj;
+}
+var str = {};
+var obj = { a: { a: "hello", b: 21 } };
+deepClone(obj, str);
+console.log(str.a);
+```
