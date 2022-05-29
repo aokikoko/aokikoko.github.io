@@ -177,6 +177,23 @@ SCU 默认返回 true , 实现的是浅比较
 
 ![ruhepeizhi](assets/ruhepeizhi.JPG)
 
+```js
+首先 < BroserRouter > 标签包裹 < App >
+(
+  <Routes>
+    <Route path="/" element={<Home />}>
+      <Route index path="/" element={<Home />}>
+
+    </Route>
+
+    <Route path="/login" element={<Login />}></Route>
+  </Routes>
+);
+```
+
+useNavigate()
+useParams()
+
 ## React 和 Vue 区别
 
 相同:
@@ -209,7 +226,7 @@ react 函数式编程, vue 声明式编程
 
 让函数组件实现 state 和 setState
 
-![useState](assets/useState.JPG)
+![usestate](assets/usestate.JPG)
 
 ### useEffect
 
@@ -295,7 +312,7 @@ redux 是全局的状态管理, 多组件共享数据
 
 依赖[]里有引用类型就会出现死循环
 
-因为react通过Object.is方法进行比较, 引用类型
+因为 react 通过 Object.is 方法进行比较, 引用类型
 
 3. useEffect 第二个参数是空数组 内部不能修改 state
 
