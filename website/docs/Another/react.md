@@ -258,7 +258,7 @@ react 函数式编程, vue 声明式编程
 
 ### useRef
 
-![useRef](assets/useRef.JPG)
+![useref](assets/useref.JPG)
 
 ### useReducer 能代替 redux 嘛
 
@@ -272,7 +272,7 @@ redux 是全局的状态管理, 多组件共享数据
 
 第二步: 对 props 进行 useMemo 包裹
 
-![useMemo](assets/useMemo.JPG)
+![usememo](assets/usememo.JPG)
 
 ### 什么是自定义 hook
 
