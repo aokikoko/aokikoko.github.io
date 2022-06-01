@@ -695,3 +695,4 @@ event.emit("event-key");
 
 ## setState是微任务还是宏任务
 
+hope
