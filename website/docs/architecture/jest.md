@@ -1,5 +1,5 @@
 ---
-title: "[前端测试] 自动化测试"
+title: "[前端测试] Jest自动化测试"
 sidebar_position: 4
 ---
 
@@ -481,3 +481,13 @@ test("测试minusOne方法", () => {
 ### toBeCalled()
 
 检测是否被执行过
+
+## snapshot 快照测试
+
+toMatchSnapshot
+
+可以用来帮助测试配置文件
+
+## 定时器模拟
+
+useFakeTimers
