@@ -192,3 +192,4 @@ init 4 个字节 double 8 个字节, 4 升的油倒入 8 升的桶, 可以直接
 ### java中不同进制的书写形式
 
 ![jinzhi](assets/jinzhi.jpg)
+
