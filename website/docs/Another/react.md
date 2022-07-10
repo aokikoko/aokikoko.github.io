@@ -258,7 +258,7 @@ react 函数式编程, vue 声明式编程
 
 ### useRef
 
-![useref](assets/useref.JPG)
+![ref](assets/ref.JPG)
 
 ### useReducer 能代替 redux 嘛
 
