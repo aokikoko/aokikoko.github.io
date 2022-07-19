@@ -141,3 +141,9 @@ Redis 是**R**emote **D**ictionary **S**erver(远程数据服务)的缩写
 2. hash类型
 
 ![hash](assets/hash.jpg)
+
+![hs](assets/hs.jpg)
+
+应用场景:
+
+![changjing](assets/changjing.jpg)
