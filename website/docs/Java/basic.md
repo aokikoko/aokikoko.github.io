@@ -42,6 +42,20 @@ Java 语言的(企业版), 用于 web 方向的网站开发
 
 **JVM 本身是否可以跨平台?**: 不可以, 允许跨平台的是 Java 程序
 
+### 高级语言的编译运行方式
+
+#### 编译型
+
+![c](assets/c.jpg)
+
+#### 解释型
+
+![p](assets/p.jpg)
+
+#### 混合型
+
+![j](assets/j.jpg)
+
 ## JRE, JDK, JVM
 
 ### JRE, JDK, JVM 的作用
