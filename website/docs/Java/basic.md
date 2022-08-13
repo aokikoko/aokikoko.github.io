@@ -1,6 +1,6 @@
 ---
 slug: basic
-title: "[Java] java基础"
+title: "[Java] java基础概念(上)"
 sidebar_position: 1
 ---
 
@@ -188,13 +188,13 @@ Java 是`强类型`语言, 对于每一种数据都给出了明确的数据类�
 
 double > float > long > int > short > byte
 
-## 类型转换
+## 运算符
+
+![zhuanhuan](assets/zhuanhuan.jpg)
 
 ### 隐式转换
 
 数据类型中, 取值范围小的数据, 给取值范围大的类型赋值 可以直接赋值
-
-![yinshi](assets/yinshi.jpg)
 
 简单记: 小的给大的, 可以直接给
 
@@ -204,30 +204,37 @@ init 4 个字节 double 8 个字节, 4 升的油倒入 8 升的桶, 可以直接
 
 ![guocheng](assets/guocheng.jpg)
 
-### 隐式转换的细节
+- 取值范围小的, 和取值范围大的进行运算, 小的会先提升为大的, 再进行运算
+- byte short char 三种类型的数据在运算的时候, 都会先直接提升为int, 然后再进行运算
 
-![xijie](assets/xijie.jpg)
+### 隐式转换的小结
 
-![int](assets/int.jpg)
+![xiaojie](assets/xiaojie.jpg)
 
 ### 强制转换
 
-![qiangzhi](assets/qiangzhi.jpg)
+如果把一个取值范围大的数值, 赋值给取值范围小的变量. 是不允许直接赋值的, 如果一定要这么做就需要加入强制转换
+
+格式: 目标数据类型 变量名 = (目标数据类型) 被强制转换的数据;
 
 注意: 强制类型转换, 可能发生精度损失
 
 精度损失: 简单理解, 将容积为 8 升的容器的水, 倒入容积为 4 升的容器中, 如果水超出了 4 升, 会洒了
 
-## ----------------------------
+```java
+double a = 12.3;
+int b = (int) a;
+```
 
-## 进制
+### 自增自减运算符
 
-进制: 指进位制, 是人们规定的一种进位方式, 表示某一位置上的数, 运算时是逢 X 进一位.十进制是逢十进一, 二进制就是逢二进一, 八进制就是逢八进一
+![zizeng](assets/zizeng.jpg)
 
-常见进制: 二进制, 八进制, 十进制, 十六进制
+### 赋值运算符
 
-### java中不同进制的书写形式
+![qiangzhi](assets/qiangzhi.jpg)
 
-![jinzhi](assets/jinzhi.jpg)
+### 短路逻辑运算符
 
-### 任意进制
+![duanlu](assets/duanlu.jpg)
+
