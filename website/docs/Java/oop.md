@@ -1,7 +1,7 @@
 ---
 slug: oop
 title: "[Java] 面向对象"
-sidebar_position: 2
+sidebar_position: 99
 ---
 
 ## 面向对象和面向过程的思想对比
