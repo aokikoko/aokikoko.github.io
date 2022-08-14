@@ -46,11 +46,7 @@ sidebar_position: 99
 
 封装: 隐藏实现细节, 仅对外暴露公共的访问方式
 
-![chaxian](assets/chaxian.jpg)
-
 代码体现:
-
-![fengzhuang](assets/fengzhuang.jpg)
 
 new 出来的两个实例, 不需要知道 setAge 方法里做了什么样的判断才达到赋值成功或者失败, 因为调用者只负责调用, 里面怎么判断不关心.
 
