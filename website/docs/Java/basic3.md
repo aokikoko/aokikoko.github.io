@@ -6,3 +6,4 @@ sidebar_position: 3
 
 ## static
 
+static 表示静态, 
