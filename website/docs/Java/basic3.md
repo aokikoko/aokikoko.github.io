@@ -110,3 +110,4 @@ java中所有的类都直接或者间接继承于Object类
 
 ![jicheng](assets/jicheng.jpg)
 
+lucky and happy
