@@ -110,4 +110,25 @@ java中所有的类都直接或者间接继承于Object类
 
 ![jicheng](assets/jicheng.jpg)
 
-lucky and happy
+### ...todo
+
+## 多态
+
+同类型的对象, 表现出的不同形态
+
+![duotai](assets/duotai.jpg)
+
+### 多态的应用场景
+
+### 多态的表现形式
+
+父类类型 对象名称 = 子类对象;
+
+### 多态的前提
+
+- 有继承/实现关系
+- 有父类引用指向子类对象 Fu f = new Zi()
+- 有方法重写
+
+
+
