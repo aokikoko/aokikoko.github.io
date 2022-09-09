@@ -91,7 +91,7 @@ public class A01_BubbleDemo {
 
 ### 2.2 动图演示
 
-![xuanze](assets\xuanze.gif)
+![xuanze](assets/xuanzepaixu.gif)
 
 
 ```java
