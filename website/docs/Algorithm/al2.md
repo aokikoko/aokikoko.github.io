@@ -91,7 +91,7 @@ public class A01_BubbleDemo {
 
 ### 2.2 动图演示
 
-![xuanze](assets\xuanze.gif)
+![xuanze](assets/xuanzepaixu.gif)
 
 
 ```java
@@ -174,7 +174,7 @@ N的范围：0~最大索引
 
 ### 3.2 动图演示
 
-![charu](assets\charu.gif)
+![charu](assets/charupaixu.gif)
 
 
 ```java
@@ -260,7 +260,7 @@ public class A03_InsertDemo {
 
 ### 4.2 动图演示
 
-![kuaipai](assets\kuaipai.gif)
+![kuaipai](assets/kuaisu.gif)
 
 
  ```java
