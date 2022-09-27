@@ -1,6 +1,6 @@
 ---
-title: "[Mysql] sql语句"
-sidebar_position: 3
+title: "[Mysql基础] sql语句"
+sidebar_position: 21
 ---
 
 ## 1、SQL 语句的分类

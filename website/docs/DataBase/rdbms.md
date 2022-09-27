@@ -1,6 +1,6 @@
 ---
-title: "[Mysql] mysql概述"
-sidebar_position: 2
+title: "[Mysql基础] mysql概述"
+sidebar_position: 20
 ---
 
 ## 1、关系型数据库与非关系型数据库
